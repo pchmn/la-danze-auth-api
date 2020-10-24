@@ -2,6 +2,12 @@ language: node_js
 node_js:
   - 14
 
+dist: xenial
+
+addons:
+  sonarcloud:
+    organization: $SONAR_ORGANISATION_KEY
+
 env:
   global:
     - NODE_ENV=$(if [$TRAVIS_BRANCH = "main"]; then echo "production"; else echo "dev")
@@ -12,6 +18,8 @@ services:
 stages:
   - build
   - test
+  - name: sonar
+    if: branch =~ /^feature\/.*$/
   - name: deploy
     if: branch =~ /^feature\/.*$/
 
@@ -38,7 +46,18 @@ jobs:
       workspaces:
         # Donwload dependencies
         use: dependencies
-      script: npm run test
+        # Upload coverage info
+        create:
+          name: coverage
+          paths: coverage/lcov.info
+      script: npm run test:cov
+
+    # SONAR
+    - stage: sonar
+      workspaces:
+        # Donwload coverage info
+        use: coverage
+      script: sonar-scanner    
 
     # DEPLOY
     - stage: deploy
