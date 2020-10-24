@@ -6,7 +6,7 @@ dist: xenial
 
 addons:
   sonarcloud:
-    organization: $SONAR_ORGANISATION_KEY
+    organization: "pchmn"
 
 env:
   global:
@@ -57,7 +57,8 @@ jobs:
       workspaces:
         # Donwload coverage info
         use: coverage
-      script: sonar-scanner    
+      script: 
+        - sonar-scanner    
 
     # DEPLOY
     - stage: deploy
