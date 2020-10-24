@@ -1,0 +1,56 @@
+language: node_js
+node_js:
+  - 14
+
+env:
+  global:
+    - NODE_ENV=$(if [$TRAVIS_BRANCH = "main"]; then echo "production"; else echo "dev")
+
+services:
+  - docker  
+
+stages:
+  - build
+  - test
+  - name: deploy
+    if: branch =~ /^feature\/.*$/
+
+# Skip npm install before each stage
+install: true
+
+jobs:
+  include:
+    # BUILD
+    - stage: build
+      script:
+        - npm i 
+        - npm run build
+      workspaces:
+        # Upload node_modules and dist folder
+        create:
+          name: dependencies
+          paths: 
+            - node_modules
+            - dist
+
+    # TEST
+    - stage: test
+      workspaces:
+        # Donwload dependencies
+        use: dependencies
+      script: npm run test
+
+    # DEPLOY
+    - stage: deploy
+      workspaces:
+        # Donwload dependencies
+        use: dependencies
+      script: 
+        - pip install --upgrade pip
+        - pip install --user awscli
+        - export PATH=$PATH:$HOME/.local/bin
+        - eval $(aws ecr get-login-password --region $REGION_NAME)
+        - echo $DOCKER_HUB_PWD | docker login -u $DOCKER_HUB_USER --password-stdin
+        - docker build -t pchmn/la-danze-en-ldc-auth-api . 
+        - docker push pchmn/la-danze-en-ldc-auth-api:latest
+        - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $REGION_NAME
