@@ -71,6 +71,6 @@ jobs:
         - export PATH=$PATH:$HOME/.local/bin
         - eval $(aws ecr get-login-password --region $REGION_NAME)
         - echo $DOCKER_HUB_PWD | docker login -u $DOCKER_HUB_USER --password-stdin
-        - docker build -t pchmn/la-danze-en-ldc-auth-api . 
+        - docker build --build-arg NODE_ENV=dev -t pchmn/la-danze-en-ldc-auth-api . 
         - docker push pchmn/la-danze-en-ldc-auth-api:latest
         - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $REGION_NAME
