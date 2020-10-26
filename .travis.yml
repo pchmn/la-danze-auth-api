@@ -15,13 +15,13 @@ stages:
   - build
   - test
   - name: sonar
-    branches:
-      only: develop
+    on:
+      branch: develop
   - name: deploy
-    branches:
-      only:
-      - main
-      - develop
+    on:
+      branch: 
+        - main
+        - develop
 
 # Skip npm install before each stage
 install: true
