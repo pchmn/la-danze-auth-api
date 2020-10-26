@@ -15,9 +15,13 @@ stages:
   - build
   - test
   - name: sonar
-    if: branch =~ /^feature\/.*$/
+    branches:
+      only: develop
   - name: deploy
-    if: branch =~ /^feature\/.*$/
+    branches:
+      only:
+      - main
+      - develop
 
 # Skip npm install before each stage
 install: true
