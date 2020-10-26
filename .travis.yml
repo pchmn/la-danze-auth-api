@@ -17,6 +17,7 @@ stages:
   - name: sonar
     if: branch = develop
   - name: deploy
+    if: branch = main OR branch = develop
 
 # Skip npm install before each stage
 install: true
@@ -57,10 +58,6 @@ jobs:
 
     # DEPLOY
     - stage: deploy
-      on:
-        branch: 
-          - main
-          - develop
       workspaces:
         # Donwload dependencies
         use: dependencies
