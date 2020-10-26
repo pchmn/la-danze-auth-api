@@ -10,7 +10,8 @@ addons:
 
 env:
   global:
-    - NODE_ENV=$(if [$TRAVIS_BRANCH = "main"]; then echo "production"; else echo "dev")
+    - NODE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo "production"; else echo "dev"; fi)
+    - SERVICE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo ""; else echo "-dev"; fi)
 
 services:
   - docker  
@@ -69,8 +70,8 @@ jobs:
         - pip install --upgrade pip
         - pip install --user awscli
         - export PATH=$PATH:$HOME/.local/bin
-        - eval $(aws ecr get-login-password --region $REGION_NAME)
-        - echo $DOCKER_HUB_PWD | docker login -u $DOCKER_HUB_USER --password-stdin
-        - docker build --build-arg NODE_ENV=dev -t pchmn/la-danze-en-ldc-auth-api . 
+        - eval $(aws ecr get-login-password --region ${REGION_NAME})
+        - echo ${DOCKER_HUB_PWD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
+        - docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api . 
         - docker push pchmn/la-danze-en-ldc-auth-api:latest
-        - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $REGION_NAME
+        - aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME}${SERVICE_ENV} --force-new-deployment --region ${REGION_NAME}
