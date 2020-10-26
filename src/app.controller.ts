@@ -11,6 +11,6 @@ export class AppController {
 
   @Get('/test')
   getTest(): string {
-    return "Test route";
+    return "Test route dev";
   }
 }
