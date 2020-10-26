@@ -8,11 +8,6 @@ addons:
   sonarcloud:
     organization: "pchmn"
 
-env:
-  global:
-    - NODE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo "production"; else echo "dev"; fi)
-    - SERVICE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo ""; else echo "-dev"; fi)
-
 services:
   - docker  
 
@@ -66,12 +61,19 @@ jobs:
       workspaces:
         # Donwload dependencies
         use: dependencies
+      before_script:
+        # Export env variables according to git branch
+        - export NODE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo "production"; else echo "dev"; fi)
+        - export SERVICE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo ""; else echo "-dev"; fi)  
       script: 
+        # Install aws cli
         - pip install --upgrade pip
         - pip install --user awscli
         - export PATH=$PATH:$HOME/.local/bin
-        - eval $(aws ecr get-login-password --region ${REGION_NAME})
+        # Login to docker hub
         - echo ${DOCKER_HUB_PWD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
+        # Build and push docker image
         - docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api . 
         - docker push pchmn/la-danze-en-ldc-auth-api:latest
+        # Update aws ecs service to use latest container image
         - aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME}${SERVICE_ENV} --force-new-deployment --region ${REGION_NAME}
