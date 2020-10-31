@@ -68,5 +68,6 @@ jobs:
         - export IMAGE_TAG=$(if [ -n ${TRAVIS_TAG} ]; then echo ${TRAVIS_TAG}; else echo "latest"; fi)
         - export SERVICE_NAME=auth-api${ECS_ENV}
         - export TASK_FAMILY=${SERVICE_NAME}
+        - sudo apt-get install jq -y
       script: 
         - bash deploy.sh

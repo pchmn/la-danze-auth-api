@@ -19,7 +19,7 @@ then
   echo "deployment on PROD environment"
   # We have to create a new task definition revision, because task image url will change
   # Get current task definition
-  TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${TASK_FAMILY} --cluster ${CLUSTER_NAME})
+  TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${TASK_FAMILY})
   # Create new task definition (based on previous) to update image url
   NEW_TASK_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE registry.hub.docker.com/pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG} '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')
   # Register new task definition revision, and get revision number
