@@ -8,9 +8,4 @@ export class AppController {
   getHello(): string {
     return "Welcome on auth api (via travis ci)";
   }
-
-  @Get('/test')
-  getTest(): string {
-    return "Test route dev via deploy sh";
-  }
 }

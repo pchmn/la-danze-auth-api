@@ -17,7 +17,7 @@ stages:
   - name: sonar
     if: branch = develop
   - name: deploy
-    if: tag IS present OR branch =~ /^feature.*$/
+    if: tag IS present OR branch = develop
 
 # Skip npm install before each stage
 install: true
