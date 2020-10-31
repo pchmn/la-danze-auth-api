@@ -63,10 +63,10 @@ jobs:
         use: dependencies
       before_script:
         # Export env variables
-        - export NODE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo "production"; else echo "dev"; fi)
-        - export ECS_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo ""; else echo "-dev"; fi)
-        - export IMAGE_TAG=$(if [-n ${TRAVIS_TAG}]; then echo ${TRAVIS_TAG}; else echo "latest"; fi)
-        - export SERVICE_NAME="auth-api${ECS_ENV}"
+        - export NODE_ENV=$(if [ -n ${TRAVIS_TAG} ]; then echo "production"; else echo "dev"; fi)
+        - export ECS_ENV=$(if [ -n ${TRAVIS_TAG} ]; then echo ""; else echo "-dev"; fi)
+        - export IMAGE_TAG=$(if [ -n ${TRAVIS_TAG} ]; then echo ${TRAVIS_TAG}; else echo "latest"; fi)
+        - export SERVICE_NAME=auth-api${ECS_ENV}
         - export TASK_FAMILY=${SERVICE_NAME}
       script: 
         - bash deploy.sh
