@@ -8,8 +8,9 @@ export PATH=$PATH:$HOME/.local/bin
 # Login to docker hub
 echo ${DOCKER_HUB_PWD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
 
-# Build and push docker image
-docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api . 
+# Build, tag and push docker image
+docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api .
+docker tag  pchmn/la-danze-en-ldc-auth-api pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG}
 docker push pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG}
 
 # Deploy to aws ecs
