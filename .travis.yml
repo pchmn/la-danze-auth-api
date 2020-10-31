@@ -69,4 +69,4 @@ jobs:
         - export SERVICE_NAME="auth-api${ECS_ENV}"
         - export TASK_FAMILY=${SERVICE_NAME}
       script: 
-        - sh deploy.sh
+        - bash deploy.sh
