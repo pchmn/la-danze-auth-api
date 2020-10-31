@@ -16,7 +16,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Welcome on auth api (via travis ci)');
+      expect(appController.getHello()).toBe('Welcome on auth api PROD (via travis ci)');
     });
   });
 });
