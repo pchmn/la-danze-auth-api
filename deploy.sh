@@ -21,7 +21,7 @@ then
   # Get current task definition
   TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${TASK_FAMILY} --region ${REGION_NAME})
   # Create new task definition (based on previous) to update image url
-  NEW_TASK_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE registry.hub.docker.com/pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG} '.taskDefinition | .containerDefinitions[0].image = ${IMAGE} | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')
+  NEW_TASK_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE registry.hub.docker.com/pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG} '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')
   # Register new task definition revision, and get revision number
   NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json ${NEW_TASK_DEFINTIION} --region ${REGION_NAME})
   NEW_REVISION=$(echo $NEW_TASK_INFO | jq '.taskDefinition.revision')
