@@ -17,7 +17,7 @@ stages:
   - name: sonar
     if: branch = develop
   - name: deploy
-    if: branch = main OR branch = develop
+    if: tag IS present OR branch =~ /^feature.*$/
 
 # Skip npm install before each stage
 install: true
@@ -62,18 +62,11 @@ jobs:
         # Donwload dependencies
         use: dependencies
       before_script:
-        # Export env variables according to git branch
+        # Export env variables
         - export NODE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo "production"; else echo "dev"; fi)
-        - export SERVICE_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo ""; else echo "-dev"; fi)  
+        - export ECS_ENV=$(if [${TRAVIS_BRANCH} = "main"]; then echo ""; else echo "-dev"; fi)
+        - export IMAGE_TAG=$(if [-n ${TRAVIS_TAG}]; then echo ${TRAVIS_TAG}; else echo "latest"; fi)
+        - export SERVICE_NAME="auth-api${ECS_ENV}"
+        - export TASK_FAMILY=${SERVICE_NAME}
       script: 
-        # Install aws cli
-        - pip install --upgrade pip
-        - pip install --user awscli
-        - export PATH=$PATH:$HOME/.local/bin
-        # Login to docker hub
-        - echo ${DOCKER_HUB_PWD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-        # Build and push docker image
-        - docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api . 
-        - docker push pchmn/la-danze-en-ldc-auth-api:latest
-        # Update aws ecs service to use latest container image
-        - aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME}${SERVICE_ENV} --force-new-deployment --region ${REGION_NAME}
+        - sh deploy.sh
