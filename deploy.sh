@@ -13,7 +13,7 @@ docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api 
 docker push pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG}
 
 # Deploy to aws ecs
-if [[-n ${TRAVIS_TAG}]]
+if [! ${TRAVIS_TAG}]
 then
   # If there is a tag (prod deploy), we have to create a new task definition revision, because task image url will change
   # Get current task definition
