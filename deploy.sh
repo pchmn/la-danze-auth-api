@@ -13,9 +13,11 @@ docker build --build-arg NODE_ENV=${NODE_ENV} -t pchmn/la-danze-en-ldc-auth-api 
 docker push pchmn/la-danze-en-ldc-auth-api:${IMAGE_TAG}
 
 # Deploy to aws ecs
-if [! -z ${TRAVIS_TAG}]
+if [ ! -z ${TRAVIS_TAG} ]
 then
-  # If there is a tag (prod deploy), we have to create a new task definition revision, because task image url will change
+  # If there is a tag => prod deploy
+  echo "deployment on PROD environment"
+  # We have to create a new task definition revision, because task image url will change
   # Get current task definition
   TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${TASK_FAMILY} --region ${REGION_NAME})
   # Create new task definition (based on previous) to update image url
@@ -26,7 +28,9 @@ then
   # Update service to use new revision
   aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --task-definition ${TASK_FAMILY}:${NEW_REVISION} --force-new-deployment --region ${REGION_NAME}
 else
-  # If there is no tag (dev deploy), we juste update service, because task image url stays the same (:latest tag)
+  # If there is no tag => dev deploy
+  echo "deployment on DEV environment"
+  # We juste update service, because task image url stays the same (:latest tag)
   # Update service 
   aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment --region ${REGION_NAME}
 fi  
