@@ -6,6 +6,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    return "Welcome on auth api (via travis ci)";
+    return "Welcome on auth api PROD (via travis ci)";
   }
 }
