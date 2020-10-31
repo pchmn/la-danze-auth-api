@@ -11,6 +11,6 @@ export class AppController {
 
   @Get('/test')
   getTest(): string {
-    return "Test route dev v2";
+    return "Test route dev via deploy sh";
   }
 }
