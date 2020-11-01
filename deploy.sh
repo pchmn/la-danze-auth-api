@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install aws cli
-if ! [ -x "$(command -v aws)" ]; then curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" ; unzip awscliv2.zip ; sudo ./aws/install ; fi
+if ! [ -x "$(command -v aws)" ]; then curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" ; eval $(unzip awscliv2.zip) ; sudo ./aws/install ; fi
 
 export PATH=$PATH:$HOME/.local/bin
 
