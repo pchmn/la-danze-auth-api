@@ -1,15 +1,46 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { generateKeyPair } from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { Connection, Model } from 'mongoose';
-import jwtConfig from 'src/config/jwt.config';
 import { UserDocument, UserSchema } from 'src/features/user.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
 import { AuthService } from './auth.service';
 import { RefreshTokenService } from './refresh-token.service';
+
+class ConfigServiceMock {
+  constructor(private privateRsaKey: string, private publicRsaKey: string) { }
+
+  get(key: string) {
+    switch (key) {
+      case 'jwt.privateKey': return this.privateRsaKey;
+      case 'jwt.publicKey': return this.publicRsaKey;
+    }
+  }
+}
+
+
+const generateKeyPairPromise = (): Promise<{ privateKey: string, publicKey: string }> => {
+  return new Promise((resolve, reject) => {
+    generateKeyPair('rsa', {
+      modulusLength: 4096,
+      publicKeyEncoding: {
+        type: 'spki',
+        format: 'pem'
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem'
+      }
+    }, (err, publicKey, privateKey) => {
+      if (err) return reject(err);
+      return resolve({ privateKey, publicKey })
+    });
+  })
+}
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -24,20 +55,23 @@ describe('AuthService', () => {
   });
 
   beforeAll(async () => {
+
+    // Generate key pair
+    const keyPair = await generateKeyPairPromise();
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         InMemoryMongodb.mongooseTestModule(),
         MongooseModule.forFeature([
           { name: UserDocument.name, schema: UserSchema },
           { name: RefreshTokenDocument.name, schema: RefreshTokenSchema }
-        ]),
-        ConfigModule.forRoot({
-          isGlobal: true,
-          load: [jwtConfig]
-        })
+        ])
       ],
       providers: [
-        ConfigService,
+        {
+          provide: ConfigService,
+          useValue: new ConfigServiceMock(keyPair.privateKey, keyPair.publicKey)
+        },
         RefreshTokenService,
         AuthService
       ]
