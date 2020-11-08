@@ -22,7 +22,6 @@ class ConfigServiceMock {
   }
 }
 
-
 const generateKeyPairPromise = (): Promise<{ privateKey: string, publicKey: string }> => {
   return new Promise((resolve, reject) => {
     generateKeyPair('rsa', {
