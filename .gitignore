@@ -2,6 +2,12 @@
 /dist
 /node_modules
 
+# generated file
+/src/generated
+
+# keys
+/rsa_keys
+
 # Logs
 logs
 *.log

@@ -1,0 +1,4 @@
+{
+  "documents": "src/features/**/*.graphql",
+  "schema": "src/features/**/*.graphql"
+}
