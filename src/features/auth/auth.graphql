@@ -1,0 +1,49 @@
+scalar DateTime
+
+enum UserRoleType {
+  ADMIN
+  USER
+}
+
+type User {
+  email: String!
+  username: String!
+  roles: [ApplicationRole!]!
+  createdAt: DateTime!
+}
+
+type ApplicationRole {
+  application: String!
+  role: UserRoleType!
+}
+
+type Query {
+  hello: String!
+  users: [User!]
+}
+
+type JwtToken {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input SignupInput {
+  email: String!
+  username: String!
+  password: String!
+}
+
+input LoginInput {
+  emailOrUsername: String!
+  password: String!
+}
+
+input TokenInput {
+  token: String!
+}
+
+type Mutation {
+  signup(input: SignupInput!): JwtToken!
+  login(input: LoginInput!): JwtToken!
+  refreshToken(input: TokenInput): JwtToken!
+}
