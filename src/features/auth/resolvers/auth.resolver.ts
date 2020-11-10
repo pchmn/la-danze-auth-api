@@ -1,4 +1,4 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtToken, LoginInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
 import { AuthService } from '../services/auth.service';
 
@@ -6,6 +6,11 @@ import { AuthService } from '../services/auth.service';
 export class AuthResolver {
 
   constructor(private authService: AuthService) { }
+
+  @Query(() => JwtToken)
+  async confirmEmailQuery(@Args('token') token: string) {
+    return this.authService.confirmEmailQuery(token);
+  }
 
   @Mutation(() => JwtToken)
   async signup(@Args('input') input: SignupInput) {
@@ -17,8 +22,13 @@ export class AuthResolver {
     return this.authService.login(input);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => JwtToken)
   async refreshToken(@Args('input') input: TokenInput) {
     return this.authService.refreshToken(input);
+  }
+
+  @Mutation(() => Boolean)
+  async confirmEmail(@Args('input') input: TokenInput) {
+    return this.authService.confirmEmail(input);
   }
 }

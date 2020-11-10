@@ -14,9 +14,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --config jest.config.json --colors",
-    "test:watch": "jest --config jest.config.json --watch --colors",
-    "test:cov": "jest --config jest.config.json --coverage",
+    "test": "jest --config jest.config.json --runInBand --colors",
+    "test:watch": "jest --config jest.config.json --runInBand --watch --colors",
+    "test:cov": "jest --config jest.config.json --runInBand --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "schema": "ts-node src/core/graphql/generate-typings"

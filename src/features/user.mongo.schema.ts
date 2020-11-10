@@ -34,11 +34,11 @@ export class UserDocument extends Document {
   @Prop()
   roles: ApplicationRole[];
 
-  @Prop({ type: Date })
+  @Prop({ type: Date, default: Date.now() })
   createdAt: number;
 
   @Prop({ type: Boolean, default: false })
-  isEmailActive: boolean;
+  isEmailConfirmed: boolean;
 
   validatePassword: Function;
 }

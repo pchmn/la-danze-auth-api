@@ -9,6 +9,7 @@ import { JwtToken, LoginInput, SignupInput, TokenInput, UserRoleType } from 'src
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { MongooseValidationErrorMapper } from 'src/shared/errors/mongoose-validation-error-mapper';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
+import { EmailTokenService } from './email-token.service';
 import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable()
@@ -17,7 +18,8 @@ export class AuthService {
   constructor(
     @InjectModel(UserDocument.name) private userModel: Model<UserDocument>,
     private configService: ConfigService,
-    private refreshTokenService: RefreshTokenService) { }
+    private refreshTokenService: RefreshTokenService,
+    private emailTokenService: EmailTokenService) { }
 
   /**
    * Signup new user
@@ -32,9 +34,10 @@ export class AuthService {
    */
   async signup(input: SignupInput): Promise<JwtToken> {
     // First create user
-    const userCreated = await this.createUser(input);
+    const createdUser = await this.createUser(input);
+    await this.emailTokenService.createEmailToken(createdUser);
     // Then create tokens
-    return this.createTokens(userCreated);
+    return this.createTokens(createdUser);
   }
 
   /**
@@ -55,8 +58,7 @@ export class AuthService {
         email: input.email,
         username: input.username,
         password: input.password,
-        roles: [{ application: 'twitter', role: UserRoleType.ADMIN }],
-        createdAt: Date.now()
+        roles: [{ application: 'twitter', role: UserRoleType.ADMIN }]
       }).save())
       // Map mongoose ValidationError to LaDanzeError
       .catch(err => { throw MongooseValidationErrorMapper.mapEmailAndUsernameErrors(err) });
@@ -86,6 +88,48 @@ export class AuthService {
     }
     // Create refresh and access tokens
     return this.createTokens(user);
+  }
+
+  /**
+   * Confirm email
+   * 
+   * @param input the token input
+   * @returns refresh and access tokens
+   * 
+   * @throws {LaDanzeError}
+   * This exception is thrown if:
+   *  - token is not found
+   *  - token is not valid (expired)
+   */
+  async confirmEmailQuery(token: string): Promise<JwtToken> {
+    // Validate token
+    const validatedEmailToken = await this.emailTokenService.validateConfirmToken(token);
+    // Active user
+    validatedEmailToken.user.isEmailConfirmed = true;
+    const updatedUser = await validatedEmailToken.user.save();
+    // Create refresh and access tokens
+    return this.createTokens(updatedUser);
+  }
+
+  /**
+   * Confirm email
+   * 
+   * @param input the token input
+   * @returns refresh and access tokens
+   * 
+   * @throws {LaDanzeError}
+   * This exception is thrown if:
+   *  - token is not found
+   *  - token is not valid (expired)
+   */
+  async confirmEmail(input: TokenInput): Promise<JwtToken> {
+    // Validate token
+    const validatedEmailToken = await this.emailTokenService.validateConfirmToken(input.token);
+    // Active user
+    validatedEmailToken.user.isEmailConfirmed = true;
+    const updatedUser = await validatedEmailToken.user.save();
+    // Create refresh and access tokens
+    return this.createTokens(updatedUser);
   }
 
   /**

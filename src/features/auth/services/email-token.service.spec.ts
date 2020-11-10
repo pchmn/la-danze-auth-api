@@ -1,0 +1,113 @@
+import { ConfigService } from '@nestjs/config';
+import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Connection, Model } from 'mongoose';
+import { UserDocument, UserSchema } from 'src/features/user.mongo.schema';
+import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
+import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
+import { EmailTokenDocument, EmailTokenSchema } from '../mongo-schemas/email-token.mongo.schema';
+import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
+import { RandomToken } from '../utils/random-token';
+import { AuthService } from './auth.service';
+import { EmailTokenService } from './email-token.service';
+import { RefreshTokenService } from './refresh-token.service';
+
+describe('EmailTokenService', () => {
+  let service: EmailTokenService;
+  let connection: Connection;
+  let userModel: Model<UserDocument>;
+  let emailTokenModel: Model<EmailTokenDocument>;
+
+  afterAll(async () => {
+    await connection.close();
+    await InMemoryMongodb.disconnect();
+  });
+
+  beforeAll(async () => {
+
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        InMemoryMongodb.mongooseTestModule(),
+        MongooseModule.forFeature([
+          { name: UserDocument.name, schema: UserSchema },
+          { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
+          { name: EmailTokenDocument.name, schema: EmailTokenSchema }
+        ])
+      ],
+      providers: [
+        ConfigService,
+        RefreshTokenService,
+        AuthService,
+        EmailTokenService
+      ]
+    }).compile();
+
+    service = module.get<EmailTokenService>(EmailTokenService);
+    userModel = module.get<Model<UserDocument>>(`${UserDocument.name}Model`);
+    emailTokenModel = module.get<Model<EmailTokenDocument>>(`${EmailTokenDocument.name}Model`);
+    connection = await module.get(getConnectionToken());
+
+    // Insert test data
+    await InMemoryMongodb.insertTestData(userModel, null, emailTokenModel);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('[createEmailToken] should create a new email token', async () => {
+    const user = new userModel();
+    const emailtoken = await service.createEmailToken(user);
+    // Check user
+    expect(emailtoken.user).toEqual(user);
+    // Check token length
+    expect(emailtoken.confirmToken.value.length).toBe(64);
+    // Check expiresAt (7 days)
+    expect(emailtoken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    // No reset token
+    expect(emailtoken.resetPasswordToken.value).toBeUndefined();
+    expect(emailtoken.resetPasswordToken.expiresAt).toBeUndefined();
+  });
+
+  it('[validateConfirmToken] should throw an error (token not found)', () => {
+    return expect(service.validateConfirmToken('notoken')).rejects.toEqual(LaDanzeError.create('confirmToken not found', ErrorCode.NotFound));
+  });
+
+  it('[validateConfirmToken] should throw an error (token not valid)', () => {
+    return expect(service.validateConfirmToken('token1')).rejects.toEqual(LaDanzeError.create('confirmToken not valid', ErrorCode.WrongInput));
+  });
+
+  it('[validateConfirmToken] should validate confirm token', async () => {
+    const emailToken = await service.validateConfirmToken('token2');
+    expect(emailToken.confirmToken.value).toEqual('token2');
+    expect(emailToken.user.username).toEqual('user2');
+  });
+
+  it('[createNewConfirmToken] should create a new confirm token (email token exists)', async () => {
+    const emailToken = await emailTokenModel.findOne({ 'confirmToken.value': 'token1' }).populate('user');
+
+    const updatedEmailToken = await service.createNewConfirmToken(emailToken.user);
+    // Compare user
+    expect(emailToken.user._id).toEqual(updatedEmailToken.user._id);
+    // Compare token
+    expect(emailToken.confirmToken.value).not.toEqual(updatedEmailToken.confirmToken.value);
+    // Compare dates
+    expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThan(updatedEmailToken.confirmToken.expiresAt.getTime());
+
+    // Check token length
+    expect(updatedEmailToken.confirmToken.value.length).toBe(64);
+    // Check expiresAt (7 days)
+    expect(updatedEmailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+  });
+
+  it('[createNewConfirmToken] should create a new email token (email token does not exist)', async () => {
+    const user = await userModel.findOne({ username: 'user3' });
+    const emailToken = await service.createNewConfirmToken(user);
+    // Compare user
+    expect(emailToken.user._id).toEqual(user._id);
+    // Check confirm token length
+    expect(emailToken.confirmToken.value).not.toBeUndefined();
+    // Check confirm expiresAt (7 days)
+    expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+  });
+});

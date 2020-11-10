@@ -74,4 +74,25 @@ describe('AuthResolver', () => {
     expect(resolver.refreshToken({ token: 'token' }))
       .resolves.toEqual(tokens);
   });
+
+  it('[confirmEmail] should throw an error', () => {
+    const error = LaDanzeError.invalidToken();
+    authService.confirmEmail = jest.fn().mockRejectedValueOnce(error);
+    expect(resolver.confirmEmail({ token: 'token' }))
+      .rejects.toEqual(error);
+  });
+
+  it('[confirmEmail] should return tokens', () => {
+    const tokens = { refreshToken: 'refreshToken', accessToken: 'accessToken' };
+    authService.confirmEmail = jest.fn().mockResolvedValueOnce(tokens);
+    expect(resolver.confirmEmail({ token: 'token' }))
+      .resolves.toEqual(tokens);
+  });
+
+  it('[confirmEmailQuery] should return tokens', () => {
+    const tokens = { refreshToken: 'refreshToken', accessToken: 'accessToken' };
+    authService.confirmEmail = jest.fn().mockResolvedValueOnce(tokens);
+    expect(resolver.confirmEmailQuery('token'))
+      .resolves.toEqual(tokens);
+  });
 });

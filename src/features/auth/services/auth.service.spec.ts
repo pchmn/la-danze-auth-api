@@ -7,8 +7,10 @@ import { Connection, Model } from 'mongoose';
 import { UserDocument, UserSchema } from 'src/features/user.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
+import { EmailTokenDocument, EmailTokenSchema } from '../mongo-schemas/email-token.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
 import { AuthService } from './auth.service';
+import { EmailTokenService } from './email-token.service';
 import { RefreshTokenService } from './refresh-token.service';
 
 class ConfigServiceMock {
@@ -48,6 +50,7 @@ describe('AuthService', () => {
   let connection: Connection;
   let refreshTokenModel: Model<RefreshTokenDocument>;
   let userModel: Model<UserDocument>;
+  let emailTokenModel: Model<EmailTokenDocument>;
 
   afterAll(async () => {
     await connection.close();
@@ -64,7 +67,8 @@ describe('AuthService', () => {
         InMemoryMongodb.mongooseTestModule(),
         MongooseModule.forFeature([
           { name: UserDocument.name, schema: UserSchema },
-          { name: RefreshTokenDocument.name, schema: RefreshTokenSchema }
+          { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
+          { name: EmailTokenDocument.name, schema: EmailTokenSchema }
         ])
       ],
       providers: [
@@ -73,7 +77,8 @@ describe('AuthService', () => {
           useValue: new ConfigServiceMock(keyPair.privateKey, keyPair.publicKey)
         },
         RefreshTokenService,
-        AuthService
+        AuthService,
+        EmailTokenService
       ]
     }).compile();
 
@@ -81,10 +86,11 @@ describe('AuthService', () => {
     configService = module.get<ConfigService>(ConfigService);
     refreshTokenModel = module.get<Model<RefreshTokenDocument>>(`${RefreshTokenDocument.name}Model`);
     userModel = module.get<Model<UserDocument>>(`${UserDocument.name}Model`);
+    emailTokenModel = module.get<Model<EmailTokenDocument>>(`${EmailTokenDocument.name}Model`);
     connection = await module.get(getConnectionToken());
 
     // Insert test data
-    await InMemoryMongodb.insertTestData(userModel, refreshTokenModel);
+    await InMemoryMongodb.insertTestData(userModel, refreshTokenModel, emailTokenModel);
   });
 
   it('should be defined', () => {
@@ -92,7 +98,7 @@ describe('AuthService', () => {
   });
 
   it('[signup] should throw an error (email not valid)', () => {
-    return expect(service.signup({ email: 'user1@test..com', username: 'user5', password: 'pwd' }))
+    return expect(service.signup({ email: 'user1@test..com', username: 'newUser', password: 'pwd' }))
       .rejects.toEqual(LaDanzeError.create('"user1@test..com" is not a valid email', ErrorCode.WrongInput));
   });
 
@@ -114,9 +120,12 @@ describe('AuthService', () => {
   it('[signup] should create a user and return tokens', async () => {
     const tokens = await service.signup({ email: 'unique@test.com', username: 'unique', password: 'pwd' });
     const createdUser = await userModel.findOne({ email: 'unique@test.com' });
+    const emailToken = await emailTokenModel.findOne({ user: createdUser });
     // Check created user
     expect(createdUser).not.toBeNull();
     expect(createdUser.username).toEqual('unique');
+    // Check email token
+    expect(emailToken.confirmToken.value.length).toEqual(64);
     // Check refresh token
     expect(tokens.refreshToken.length).toEqual(64);
     // Check access token
@@ -126,8 +135,8 @@ describe('AuthService', () => {
   });
 
   it('[login] should throw an error (user not found)', () => {
-    return expect(service.login({ emailOrUsername: 'user5', password: 'pwd1' }))
-      .rejects.toEqual(LaDanzeError.userNotFound('user5'));
+    return expect(service.login({ emailOrUsername: 'nouser', password: 'pwd1' }))
+      .rejects.toEqual(LaDanzeError.userNotFound('nouser'));
   });
 
   it('[login] should throw an error (wrong password)', () => {
@@ -154,6 +163,24 @@ describe('AuthService', () => {
       expect(decoded.username).toEqual('user1');
     });
   });
+
+  it('[confirmEmail] should throw an error (email token not found)', () => {
+    return expect(service.confirmEmail({ token: 'notoken' })).rejects.toEqual(LaDanzeError.create('confirmToken not found', ErrorCode.NotFound))
+  });
+
+  it('[confirmEmail] should throw an error (email token not valid)', () => {
+    return expect(service.confirmEmail({ token: 'token1' })).rejects.toEqual(LaDanzeError.create('confirmToken not valid', ErrorCode.WrongInput))
+  });
+
+  it('[confirmEmail] should return token', async () => {
+    const tokens = await service.confirmEmail({ token: 'token2' });
+    expect(tokens.refreshToken.length).toEqual(64);
+    // Check access token
+    jwt.verify(tokens.accessToken, configService.get('jwt.publicKey'), (err, decoded) => {
+      expect(decoded.username).toEqual('user2');
+    });
+  });
+
 
   it('[refreshToken] should throw an error (token not valid)', () => {
     return expect(service.refreshToken({ token: 'token2' })).rejects.toEqual(LaDanzeError.invalidToken());

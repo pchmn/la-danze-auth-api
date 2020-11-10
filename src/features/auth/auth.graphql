@@ -42,8 +42,25 @@ input TokenInput {
   token: String!
 }
 
+input ResetPasswordInput {
+  token: String!
+  newPassword: String!
+}
+
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+}
+
+type Query {
+  confirmEmail(token: String!): JwtToken!
+}
+
 type Mutation {
   signup(input: SignupInput!): JwtToken!
   login(input: LoginInput!): JwtToken!
   refreshToken(input: TokenInput): JwtToken!
+  confirmEmail(input: TokenInput): JwtToken!
+  resetPassword(input: ResetPasswordInput): JwtToken!
+  changePassword(input: ChangePasswordInput): JwtToken!
 }
