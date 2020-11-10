@@ -17,5 +17,5 @@
   "transform": {
     "^.+\\.ts$": "ts-jest"
   },
-  "coverageDirectory": "../coverage"
+  "coverageDirectory": "./coverage"
 }
