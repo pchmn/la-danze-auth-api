@@ -6,6 +6,7 @@ import { DateTimeResolver } from 'graphql-scalars';
 import baseConfig from 'src/config/base.config';
 import databaseConfig from 'src/config/database.config';
 import jwtConfig from 'src/config/jwt.config';
+import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 
 @Module({
   imports: [
@@ -18,10 +19,17 @@ import jwtConfig from 'src/config/jwt.config';
       resolvers: { DateTime: DateTimeResolver }
     }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: `mongodb://${configService.get('mongodb.user')}:${configService.get('mongodb.pwd')}@${configService.get('mongodb.host')}:${configService.get('mongodb.port')}/${configService.get('mongodb.db')}?authSource=${configService.get('mongodb.db')}`,
-      }),
+      useFactory: async () => {
+        const uri = await InMemoryMongodb.mongod.getUri();
+        console.log(uri)
+        return {
+          uri: uri
+        }
+      },
+      // imports: [ConfigModule],
+      // useFactory: async (configService: ConfigService) => ({
+      //   uri: `mongodb://${configService.get('mongodb.user')}:${configService.get('mongodb.pwd')}@${configService.get('mongodb.host')}:${configService.get('mongodb.port')}/${configService.get('mongodb.db')}?authSource=${configService.get('mongodb.db')}`,
+      // }),
       inject: [ConfigService],
     })
   ]
