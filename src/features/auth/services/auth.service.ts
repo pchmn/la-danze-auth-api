@@ -10,6 +10,7 @@ import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { MongooseValidationErrorMapper } from 'src/shared/errors/mongoose-validation-error-mapper';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
 import { EmailTokenService } from './email-token.service';
+import { EmailService } from './email.service';
 import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable()
@@ -19,7 +20,8 @@ export class AuthService {
     @InjectModel(UserDocument.name) private userModel: Model<UserDocument>,
     private configService: ConfigService,
     private refreshTokenService: RefreshTokenService,
-    private emailTokenService: EmailTokenService) { }
+    private emailTokenService: EmailTokenService,
+    private emailService: EmailService) { }
 
   /**
    * Signup new user
@@ -35,7 +37,10 @@ export class AuthService {
   async signup(input: SignupInput): Promise<JwtToken> {
     // First create user
     const createdUser = await this.createUser(input);
-    await this.emailTokenService.createEmailToken(createdUser);
+    // Create email token
+    const emailToken = await this.emailTokenService.createEmailToken(createdUser);
+    // Send email (asynchron to not block sign up)
+    this.emailService.sendEmail(emailToken);
     // Then create tokens
     return this.createTokens(createdUser);
   }

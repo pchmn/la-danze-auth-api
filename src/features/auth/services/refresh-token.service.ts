@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { nanoid } from 'nanoid';
 import { UserDocument } from 'src/features/user.mongo.schema';
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
@@ -18,10 +17,7 @@ export class RefreshTokenService {
    */
   async createRefreshToken(user: UserDocument): Promise<RefreshTokenDocument> {
     return new this.refreshTokenModel({
-      user: user,
-      token: this.randomTokenValue(),
-      // Expires in 7 days
-      expiresAt: Date.now() + 60 * 60 * 24 * 7 * 1000
+      user: user
     }).save();
   }
 
@@ -74,14 +70,5 @@ export class RefreshTokenService {
     const document = await this.revokeToken(token);
     // Then create a new one
     return this.createRefreshToken(document.user);
-  }
-
-  /**
-   * Create a random (~unique) token value of 64 characters
-   * 
-   * @returns the token value
-   */
-  private randomTokenValue(): string {
-    return nanoid(64);
   }
 }

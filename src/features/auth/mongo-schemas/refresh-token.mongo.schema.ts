@@ -11,13 +11,13 @@ export class RefreshTokenDocument extends Document {
   @Prop({ type: SchemaMongoose.Types.ObjectId, ref: UserDocument.name })
   user: UserDocument;
 
-  @Prop({ unique: true })
+  @Prop({ default: RandomToken.create, unique: true })
   token: string;
 
-  @Prop({ default: Date.now() + RandomToken.TOKEN_LIFE_TIME })
+  @Prop({ default: RandomToken.expiresAt })
   expiresAt: Date;
 
-  @Prop({ type: Date, default: Date.now() })
+  @Prop({ type: Date, default: Date.now })
   createdAt: number;
 
   @Prop({ type: Date })
@@ -31,7 +31,7 @@ export class RefreshTokenDocument extends Document {
 export const RefreshTokenSchema = SchemaFactory.createForClass(RefreshTokenDocument);
 
 RefreshTokenSchema.virtual('isExpired').get(function () {
-  return Date.now() >= this.expiresAt;
+  return Date.now() > this.expiresAt;
 });
 
 RefreshTokenSchema.virtual('isActive').get(function () {

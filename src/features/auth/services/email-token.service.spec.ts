@@ -8,7 +8,6 @@ import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 import { EmailTokenDocument, EmailTokenSchema } from '../mongo-schemas/email-token.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
 import { RandomToken } from '../utils/random-token';
-import { AuthService } from './auth.service';
 import { EmailTokenService } from './email-token.service';
 import { RefreshTokenService } from './refresh-token.service';
 
@@ -37,7 +36,6 @@ describe('EmailTokenService', () => {
       providers: [
         ConfigService,
         RefreshTokenService,
-        AuthService,
         EmailTokenService
       ]
     }).compile();
@@ -85,10 +83,8 @@ describe('EmailTokenService', () => {
 
   it('[createNewConfirmToken] should create a new confirm token (email token exists)', async () => {
     const emailToken = await emailTokenModel.findOne({ 'confirmToken.value': 'token1' }).populate('user');
-    console.log('before', emailToken.confirmToken.value);
 
     const updatedEmailToken = await service.createNewConfirmToken(emailToken.user);
-    console.log('before', emailToken.confirmToken.value);
     // Compare user
     expect(emailToken.user._id).toEqual(updatedEmailToken.user._id);
     // Compare token

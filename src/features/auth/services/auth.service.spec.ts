@@ -11,6 +11,7 @@ import { EmailTokenDocument, EmailTokenSchema } from '../mongo-schemas/email-tok
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
 import { AuthService } from './auth.service';
 import { EmailTokenService } from './email-token.service';
+import { EmailService } from './email.service';
 import { RefreshTokenService } from './refresh-token.service';
 
 class ConfigServiceMock {
@@ -22,6 +23,10 @@ class ConfigServiceMock {
       case 'jwt.publicKey': return this.publicRsaKey;
     }
   }
+}
+
+class EmailServiceMock {
+  sendEmail(emailToken: EmailTokenDocument) { }
 }
 
 
@@ -47,6 +52,7 @@ const generateKeyPairPromise = (): Promise<{ privateKey: string, publicKey: stri
 describe('AuthService', () => {
   let service: AuthService;
   let configService: ConfigService;
+  let emailService: EmailService;
   let connection: Connection;
   let refreshTokenModel: Model<RefreshTokenDocument>;
   let userModel: Model<UserDocument>;
@@ -78,12 +84,17 @@ describe('AuthService', () => {
         },
         RefreshTokenService,
         AuthService,
-        EmailTokenService
+        EmailTokenService,
+        {
+          provide: EmailService,
+          useClass: EmailServiceMock
+        }
       ]
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     configService = module.get<ConfigService>(ConfigService);
+    emailService = module.get<EmailService>(EmailService);
     refreshTokenModel = module.get<Model<RefreshTokenDocument>>(`${RefreshTokenDocument.name}Model`);
     userModel = module.get<Model<UserDocument>>(`${UserDocument.name}Model`);
     emailTokenModel = module.get<Model<EmailTokenDocument>>(`${EmailTokenDocument.name}Model`);
@@ -118,6 +129,7 @@ describe('AuthService', () => {
   });
 
   it('[signup] should create a user and return tokens', async () => {
+    const spy = spyOn(emailService, 'sendEmail');
     const tokens = await service.signup({ email: 'unique@test.com', username: 'unique', password: 'pwd' });
     const createdUser = await userModel.findOne({ email: 'unique@test.com' });
     const emailToken = await emailTokenModel.findOne({ user: createdUser });
@@ -126,6 +138,8 @@ describe('AuthService', () => {
     expect(createdUser.username).toEqual('unique');
     // Check email token
     expect(emailToken.confirmToken.value.length).toEqual(64);
+    // Check email sent
+    expect(spy).toHaveBeenCalled();
     // Check refresh token
     expect(tokens.refreshToken.length).toEqual(64);
     // Check access token
@@ -214,7 +228,7 @@ describe('AuthService', () => {
     expect(tokens.refreshToken.length).toEqual(64);
     // Check access token
     jwt.verify(tokens.accessToken, configService.get('jwt.publicKey'), (err, decoded) => {
-      expect(decoded.username).toEqual('user1');
+      expect(decoded.username).toEqual('user5');
     });
   });
 });

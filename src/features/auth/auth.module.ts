@@ -6,6 +6,7 @@ import { RefreshTokenDocument, RefreshTokenSchema } from './mongo-schemas/refres
 import { AuthResolver } from './resolvers/auth.resolver';
 import { AuthService } from './services/auth.service';
 import { EmailTokenService } from './services/email-token.service';
+import { EmailService } from './services/email.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 
 @Module({
@@ -16,6 +17,6 @@ import { RefreshTokenService } from './services/refresh-token.service';
       { name: EmailTokenDocument.name, schema: EmailTokenSchema }
     ])
   ],
-  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService]
+  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService, EmailService]
 })
 export class AuthModule { }

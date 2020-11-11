@@ -6,13 +6,14 @@ import { DateTimeResolver } from 'graphql-scalars';
 import baseConfig from 'src/config/base.config';
 import databaseConfig from 'src/config/database.config';
 import jwtConfig from 'src/config/jwt.config';
+import nodemailConfig from 'src/config/nodemail.config';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [baseConfig, databaseConfig, jwtConfig]
+      load: [baseConfig, databaseConfig, jwtConfig, nodemailConfig]
     }),
     GraphQLModule.forRoot({
       typePaths: ['./src/**/*.graphql'],
@@ -21,7 +22,6 @@ import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
     MongooseModule.forRootAsync({
       useFactory: async () => {
         const uri = await InMemoryMongodb.mongod.getUri();
-        console.log(uri)
         return {
           uri: uri
         }

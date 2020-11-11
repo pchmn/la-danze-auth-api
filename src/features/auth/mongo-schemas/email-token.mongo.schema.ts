@@ -12,8 +12,8 @@ export class EmailTokenDocument extends Document {
   user: UserDocument;
 
   @Prop(raw({
-    value: { type: String, default: RandomToken.create(), unique: true },
-    expiresAt: { type: Date, default: Date.now() + RandomToken.TOKEN_LIFE_TIME }
+    value: { type: String, default: RandomToken.create },
+    expiresAt: { type: Date, default: RandomToken.expiresAt }
   }))
   confirmToken: Record<string, any>;
 
@@ -23,7 +23,7 @@ export class EmailTokenDocument extends Document {
   }))
   resetPasswordToken: Record<string, any>;
 
-  @Prop({ type: Date, default: Date.now() })
+  @Prop({ type: Date, default: Date.now })
   createdAt: number;
 
   isConfirmTokenValid: boolean;
@@ -36,17 +36,17 @@ export const EmailTokenSchema = SchemaFactory.createForClass(EmailTokenDocument)
 EmailTokenSchema.pre<EmailTokenDocument>('save', function (next) {
   if (this.isModified('confirmToken.value') && this.isModified('resetPasswordToken.value')) {
     // Set expiresAt for new confirmToken
-    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = Date.now() + RandomToken.TOKEN_LIFE_TIME;
+    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = RandomToken.expiresAt();
     // Set expiresAt for new resetPasswordToken
-    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = Date.now() + RandomToken.TOKEN_LIFE_TIME;
+    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = RandomToken.expiresAt();
     next();
   } else if (this.isModified('confirmToken.value')) {
     // Set expiresAt for new confirmToken
-    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = Date.now() + RandomToken.TOKEN_LIFE_TIME;
+    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = RandomToken.expiresAt();
     next();
   } else if (this.isModified('resetPasswordToken.value')) {
     // Set expiresAt for new resetPasswordToken
-    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = Date.now() + RandomToken.TOKEN_LIFE_TIME;
+    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = RandomToken.expiresAt();
     next();
   } else {
     next();
