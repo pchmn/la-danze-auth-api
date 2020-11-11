@@ -4,8 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ApolloError } from 'apollo-server-express';
 import * as jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
-import { UserDocument } from 'src/features/user.mongo.schema';
-import { JwtToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput, UserRoleType } from 'src/generated/graphql.schema';
+import { AccountDocument } from 'src/features/account.mongo.schema';
+import { AuthTokens, LoginInput, ResetPasswordInput, SignupInput, TokenInput, UserRoleType } from 'src/generated/graphql.schema';
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { MongooseValidationErrorMapper } from 'src/shared/errors/mongoose-validation-error-mapper';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
@@ -17,7 +17,7 @@ import { RefreshTokenService } from './refresh-token.service';
 export class AuthService {
 
   constructor(
-    @InjectModel(UserDocument.name) private userModel: Model<UserDocument>,
+    @InjectModel(AccountDocument.name) private userModel: Model<AccountDocument>,
     private configService: ConfigService,
     private refreshTokenService: RefreshTokenService,
     private emailTokenService: EmailTokenService,
@@ -34,7 +34,7 @@ export class AuthService {
    *  - email or username already exist
    *  - email format is not valid 
    */
-  async signup(input: SignupInput): Promise<JwtToken> {
+  async signup(input: SignupInput): Promise<AuthTokens> {
     // First create user
     const createdUser = await this.createUser(input);
     // Create email token
@@ -56,11 +56,11 @@ export class AuthService {
    *  - email or username already exist
    *  - email format is not valid 
    */
-  private async createUser(input: SignupInput): Promise<UserDocument> {
+  private async createUser(input: SignupInput): Promise<AccountDocument> {
     // Init to wait mongoose to finish building index
     return this.userModel.init()
       .then(() => new this.userModel({
-        email: input.email,
+        email: { value: input.email },
         username: input.username,
         password: input.password,
         roles: [{ application: 'twitter', role: UserRoleType.ADMIN }]
@@ -80,9 +80,9 @@ export class AuthService {
    *  - user is not found
    *  - password is wrong
    */
-  async login(input: LoginInput): Promise<JwtToken> {
+  async login(input: LoginInput): Promise<AuthTokens> {
     // Get user
-    const user = await this.userModel.findOne().or([{ email: input.emailOrUsername }, { username: input.emailOrUsername }]);
+    const user = await this.userModel.findOne().or([{ 'email.value': input.emailOrUsername }, { username: input.emailOrUsername }]);
     // Check if user exists
     if (!user) {
       throw LaDanzeError.userNotFound(input.emailOrUsername);
@@ -106,14 +106,11 @@ export class AuthService {
    *  - token is not found
    *  - token is not valid (expired)
    */
-  async confirmEmailQuery(token: string): Promise<JwtToken> {
+  async confirmEmailQuery(token: string): Promise<AuthTokens> {
     // Validate token
     const validatedEmailToken = await this.emailTokenService.validateConfirmToken(token);
-    // Active user
-    validatedEmailToken.user.isEmailConfirmed = true;
-    const updatedUser = await validatedEmailToken.user.save();
     // Create refresh and access tokens
-    return this.createTokens(updatedUser);
+    return this.createTokens(validatedEmailToken.user);
   }
 
   /**
@@ -127,14 +124,11 @@ export class AuthService {
    *  - token is not found
    *  - token is not valid (expired)
    */
-  async confirmEmail(input: TokenInput): Promise<JwtToken> {
+  async confirmEmail(input: TokenInput): Promise<AuthTokens> {
     // Validate token
     const validatedEmailToken = await this.emailTokenService.validateConfirmToken(input.token);
-    // Active user
-    validatedEmailToken.user.isEmailConfirmed = true;
-    const updatedUser = await validatedEmailToken.user.save();
     // Create refresh and access tokens
-    return this.createTokens(updatedUser);
+    return this.createTokens(validatedEmailToken.user);
   }
 
   /**
@@ -148,11 +142,11 @@ export class AuthService {
    *  - token is not found
    *  - token is not valid (expired)
    */
-  async resetPassword(input: ResetPasswordInput): Promise<JwtToken> {
+  async resetPassword(input: ResetPasswordInput): Promise<AuthTokens> {
     // Validate token
     const validatedEmailToken = await this.emailTokenService.validateResetPasswordToken(input.token);
     // Change password
-    validatedEmailToken.user.password = input.newPassword;
+    validatedEmailToken.user.password = input.password;
     const updatedUser = await validatedEmailToken.user.save();
     // Create refresh and access tokens
     return this.createTokens(updatedUser);
@@ -186,7 +180,7 @@ export class AuthService {
    * 
    * @throws {LaDanzeError} if access token can't be created
    */
-  private async createTokens(user: UserDocument, refreshToken?: RefreshTokenDocument): Promise<JwtToken> {
+  private async createTokens(user: AccountDocument, refreshToken?: RefreshTokenDocument): Promise<AuthTokens> {
     // If refresh token is already created, use it directly
     const refreshToken$ = refreshToken ? refreshToken : this.refreshTokenService.createRefreshToken(user)
     // Create refresh and access tokens in parallel
@@ -206,7 +200,7 @@ export class AuthService {
    * 
    * @throws {LaDanzeError} if access token can't be created
    */
-  private async createAccessToken(user: UserDocument): Promise<string> {
+  private async createAccessToken(user: AccountDocument): Promise<string> {
     return new Promise((resolve, reject) => {
       // Create token (180s lifetime)
       jwt.sign({ username: user.username, roles: user.roles, createdAt: user.createdAt }, this.configService.get('jwt.privateKey'), { algorithm: 'RS256', expiresIn: '180s' }, (err, token) => {

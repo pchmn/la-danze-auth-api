@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaMongoose } from "mongoose";
-import { UserDocument } from "src/features/user.mongo.schema";
+import { AccountDocument } from "src/features/account.mongo.schema";
 import { RandomToken } from "../utils/random-token";
 
 @Schema({
@@ -8,8 +8,8 @@ import { RandomToken } from "../utils/random-token";
 })
 export class RefreshTokenDocument extends Document {
 
-  @Prop({ type: SchemaMongoose.Types.ObjectId, ref: UserDocument.name })
-  user: UserDocument;
+  @Prop({ type: SchemaMongoose.Types.ObjectId, ref: AccountDocument.name })
+  user: AccountDocument;
 
   @Prop({ default: RandomToken.create, unique: true })
   token: string;

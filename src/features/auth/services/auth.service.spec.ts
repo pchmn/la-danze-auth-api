@@ -4,10 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { generateKeyPair } from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { Connection, Model } from 'mongoose';
-import { UserDocument, UserSchema } from 'src/features/user.mongo.schema';
+import { AccountDocument, AccountSchema } from 'src/features/account.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
-import { EmailTokenDocument, EmailTokenSchema } from '../mongo-schemas/email-token.mongo.schema';
+import { EmailTokensDocument, EmailTokensSchema } from '../mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
 import { AuthService } from './auth.service';
 import { EmailTokenService } from './email-token.service';
@@ -26,7 +26,7 @@ class ConfigServiceMock {
 }
 
 class EmailServiceMock {
-  sendEmail(emailToken: EmailTokenDocument) { }
+  sendEmail(emailToken: EmailTokensDocument) { }
 }
 
 
@@ -55,8 +55,8 @@ describe('AuthService', () => {
   let emailService: EmailService;
   let connection: Connection;
   let refreshTokenModel: Model<RefreshTokenDocument>;
-  let userModel: Model<UserDocument>;
-  let emailTokenModel: Model<EmailTokenDocument>;
+  let userModel: Model<AccountDocument>;
+  let emailTokenModel: Model<EmailTokensDocument>;
 
   afterAll(async () => {
     await connection.close();
@@ -72,9 +72,9 @@ describe('AuthService', () => {
       imports: [
         InMemoryMongodb.mongooseTestModule(),
         MongooseModule.forFeature([
-          { name: UserDocument.name, schema: UserSchema },
+          { name: AccountDocument.name, schema: AccountSchema },
           { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
-          { name: EmailTokenDocument.name, schema: EmailTokenSchema }
+          { name: EmailTokensDocument.name, schema: EmailTokensSchema }
         ])
       ],
       providers: [
@@ -96,8 +96,8 @@ describe('AuthService', () => {
     configService = module.get<ConfigService>(ConfigService);
     emailService = module.get<EmailService>(EmailService);
     refreshTokenModel = module.get<Model<RefreshTokenDocument>>(`${RefreshTokenDocument.name}Model`);
-    userModel = module.get<Model<UserDocument>>(`${UserDocument.name}Model`);
-    emailTokenModel = module.get<Model<EmailTokenDocument>>(`${EmailTokenDocument.name}Model`);
+    userModel = module.get<Model<AccountDocument>>(`${AccountDocument.name}Model`);
+    emailTokenModel = module.get<Model<EmailTokensDocument>>(`${EmailTokensDocument.name}Model`);
     connection = await module.get(getConnectionToken());
 
     // Insert test data
@@ -131,7 +131,7 @@ describe('AuthService', () => {
   it('[signup] should create a user and return tokens', async () => {
     const spy = spyOn(emailService, 'sendEmail');
     const tokens = await service.signup({ email: 'unique@test.com', username: 'unique', password: 'pwd' });
-    const createdUser = await userModel.findOne({ email: 'unique@test.com' });
+    const createdUser = await userModel.findOne({ 'email.value': 'unique@test.com' });
     const emailToken = await emailTokenModel.findOne({ user: createdUser });
     // Check created user
     expect(createdUser).not.toBeNull();
@@ -196,16 +196,16 @@ describe('AuthService', () => {
   });
 
   it('[resetPassword] should throw an error (email token not found)', () => {
-    return expect(service.resetPassword({ token: 'notoken', newPassword: 'pwd' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound))
+    return expect(service.resetPassword({ token: 'notoken', password: 'pwd' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound))
   });
 
   it('[resetPassword] shTokenould throw an error (email token not valid)', () => {
-    return expect(service.resetPassword({ token: 'token4', newPassword: 'pwd' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput))
+    return expect(service.resetPassword({ token: 'token4', password: 'pwd' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput))
   });
 
   it('[resetPassword] should return token', async () => {
     const oldUser = await userModel.findOne({ username: 'user5' });
-    const tokens = await service.resetPassword({ token: 'token5', newPassword: 'pwd' });
+    const tokens = await service.resetPassword({ token: 'token5', password: 'pwd' });
     const newUser = await userModel.findOne({ username: 'user5' });
     // Verify password has changed
     expect(oldUser.password).not.toEqual(newUser.password);

@@ -28,7 +28,7 @@ export class TokenInput {
 
 export class ResetPasswordInput {
     token: string;
-    newPassword: string;
+    password: string;
 }
 
 export class ChangePasswordInput {
@@ -36,11 +36,21 @@ export class ChangePasswordInput {
     newPassword: string;
 }
 
-export class User {
+export class EmailInput {
     email: string;
+}
+
+export class Email {
+    value: string;
+    isConfirmed: boolean;
+}
+
+export class Account {
+    email: Email;
     username: string;
     roles: ApplicationRole[];
     createdAt: DateTime;
+    isActive: boolean;
 }
 
 export class ApplicationRole {
@@ -51,28 +61,32 @@ export class ApplicationRole {
 export abstract class IQuery {
     abstract hello(): string | Promise<string>;
 
-    abstract users(): User[] | Promise<User[]>;
+    abstract users(): Account[] | Promise<Account[]>;
 
-    abstract confirmEmail(token: string): JwtToken | Promise<JwtToken>;
+    abstract confirmEmailQuery(token: string): AuthTokens | Promise<AuthTokens>;
 }
 
-export class JwtToken {
+export class AuthTokens {
     accessToken: string;
     refreshToken: string;
 }
 
 export abstract class IMutation {
-    abstract signup(input: SignupInput): JwtToken | Promise<JwtToken>;
+    abstract signup(input: SignupInput): AuthTokens | Promise<AuthTokens>;
 
-    abstract login(input: LoginInput): JwtToken | Promise<JwtToken>;
+    abstract login(input: LoginInput): AuthTokens | Promise<AuthTokens>;
 
-    abstract refreshToken(input?: TokenInput): JwtToken | Promise<JwtToken>;
+    abstract refreshToken(input?: TokenInput): AuthTokens | Promise<AuthTokens>;
 
-    abstract confirmEmail(input?: TokenInput): JwtToken | Promise<JwtToken>;
+    abstract confirmEmail(input?: TokenInput): AuthTokens | Promise<AuthTokens>;
 
-    abstract resetPassword(input?: ResetPasswordInput): JwtToken | Promise<JwtToken>;
+    abstract resetPassword(input?: ResetPasswordInput): AuthTokens | Promise<AuthTokens>;
 
-    abstract changePassword(input?: ChangePasswordInput): JwtToken | Promise<JwtToken>;
+    abstract changePassword(input?: ChangePasswordInput): AuthTokens | Promise<AuthTokens>;
+
+    abstract addEmail(input?: EmailInput): AuthTokens | Promise<AuthTokens>;
+
+    abstract activeEmail(input?: EmailInput): AuthTokens | Promise<AuthTokens>;
 }
 
 export type DateTime = any;

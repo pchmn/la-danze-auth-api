@@ -99,14 +99,14 @@ describe('AuthResolver', () => {
   it('[resetPassword] should throw an error', () => {
     const error = LaDanzeError.invalidToken();
     authService.resetPassword = jest.fn().mockRejectedValueOnce(error);
-    return expect(resolver.resetPassword({ token: 'token', newPassword: 'pwd' }))
+    return expect(resolver.resetPassword({ token: 'token', password: 'pwd' }))
       .rejects.toEqual(error);
   });
 
   it('[resetPassword] should return tokens', () => {
     const tokens = { refreshToken: 'refreshToken', accessToken: 'accessToken' };
     authService.resetPassword = jest.fn().mockResolvedValueOnce(tokens);
-    return expect(resolver.resetPassword({ token: 'token', newPassword: 'pwd' }))
+    return expect(resolver.resetPassword({ token: 'token', password: 'pwd' }))
       .resolves.toEqual(tokens);
   });
 });
