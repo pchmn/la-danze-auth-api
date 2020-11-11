@@ -60,7 +60,6 @@ describe('EmailTokenService', () => {
     expect(emailtoken.user).toEqual(user);
     // Check token length
     expect(emailtoken.confirmToken.value.length).toBe(64);
-    console.log(emailtoken)
     // Check expiresAt (7 days)
     expect(emailtoken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
     // No reset token
