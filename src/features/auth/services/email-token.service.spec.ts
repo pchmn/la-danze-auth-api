@@ -2,10 +2,10 @@ import { ConfigService } from '@nestjs/config';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Connection, Model } from 'mongoose';
-import { UserDocument, UserSchema } from 'src/features/user.mongo.schema';
+import { AccountDocument, AccountSchema } from 'src/features/account.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
-import { EmailTokenDocument, EmailTokenSchema } from '../mongo-schemas/email-token.mongo.schema';
+import { EmailTokensDocument, EmailTokensSchema } from '../mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
 import { RandomToken } from '../utils/random-token';
 import { EmailTokenService } from './email-token.service';
@@ -14,8 +14,8 @@ import { RefreshTokenService } from './refresh-token.service';
 describe('EmailTokenService', () => {
   let service: EmailTokenService;
   let connection: Connection;
-  let userModel: Model<UserDocument>;
-  let emailTokenModel: Model<EmailTokenDocument>;
+  let userModel: Model<AccountDocument>;
+  let emailTokenModel: Model<EmailTokensDocument>;
 
   afterAll(async () => {
     await connection.close();
@@ -28,9 +28,9 @@ describe('EmailTokenService', () => {
       imports: [
         InMemoryMongodb.mongooseTestModule(),
         MongooseModule.forFeature([
-          { name: UserDocument.name, schema: UserSchema },
+          { name: AccountDocument.name, schema: AccountSchema },
           { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
-          { name: EmailTokenDocument.name, schema: EmailTokenSchema }
+          { name: EmailTokensDocument.name, schema: EmailTokensSchema }
         ])
       ],
       providers: [
@@ -41,8 +41,8 @@ describe('EmailTokenService', () => {
     }).compile();
 
     service = module.get<EmailTokenService>(EmailTokenService);
-    userModel = module.get<Model<UserDocument>>(`${UserDocument.name}Model`);
-    emailTokenModel = module.get<Model<EmailTokenDocument>>(`${EmailTokenDocument.name}Model`);
+    userModel = module.get<Model<AccountDocument>>(`${AccountDocument.name}Model`);
+    emailTokenModel = module.get<Model<EmailTokensDocument>>(`${EmailTokensDocument.name}Model`);
     connection = await module.get(getConnectionToken());
 
     // Insert test data
@@ -60,8 +60,9 @@ describe('EmailTokenService', () => {
     expect(emailtoken.user).toEqual(user);
     // Check token length
     expect(emailtoken.confirmToken.value.length).toBe(64);
+    console.log(emailtoken)
     // Check expiresAt (7 days)
-    expect(emailtoken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailtoken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
     // No reset token
     expect(emailtoken.resetPasswordToken.value).toBeUndefined();
     expect(emailtoken.resetPasswordToken.expiresAt).toBeUndefined();
@@ -90,12 +91,12 @@ describe('EmailTokenService', () => {
     // Compare token
     expect(emailToken.confirmToken.value).not.toEqual(updatedEmailToken.confirmToken.value);
     // Compare dates
-    expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThan(updatedEmailToken.confirmToken.expiresAt.getTime());
+    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThan(updatedEmailToken.getConfirmTokenExpiresAt());
 
     // Check token length
     expect(updatedEmailToken.confirmToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(updatedEmailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(updatedEmailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
   });
 
   it('[createNewConfirmToken] should create a new email token (email token does not exist)', async () => {
@@ -106,7 +107,7 @@ describe('EmailTokenService', () => {
     // Check confirm token length
     expect(emailToken.confirmToken.value).not.toBeUndefined();
     // Check confirm expiresAt (7 days)
-    expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
   });
 
   it('[createNewResetPasswordToken] should create a new reset password token (email token exists)', async () => {
@@ -121,7 +122,7 @@ describe('EmailTokenService', () => {
     // Check token length
     expect(updatedEmailToken.resetPasswordToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(updatedEmailToken.resetPasswordToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(updatedEmailToken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
   });
 
   it('[createNewResetPasswordToken] should create a new email token (email token does not exist)', async () => {
@@ -132,12 +133,12 @@ describe('EmailTokenService', () => {
     // Check confirm token length
     expect(emailToken.confirmToken.value.length).toBe(64);
     // Check confirm expiresAt (7 days)
-    expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
 
     // Check token length
     expect(emailToken.resetPasswordToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(emailToken.resetPasswordToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailToken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
   });
 
   it('[validateResetPasswordToken] should throw an error (token not found)', () => {

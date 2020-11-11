@@ -1,10 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { EmailTokenDocument } from '../mongo-schemas/email-token.mongo.schema';
+import { EmailTokensDocument } from '../mongo-schemas/email-tokens.mongo.schema';
 import { EmailService } from './email.service';
 
 class EmailServiceMock {
-  sendEmail(emailToken: EmailTokenDocument) { }
+  sendEmail(emailToken: EmailTokensDocument) { }
 }
 
 describe('EmailService', () => {

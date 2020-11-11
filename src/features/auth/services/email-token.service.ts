@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserDocument } from 'src/features/user.mongo.schema';
+import { AccountDocument } from 'src/features/account.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
-import { EmailTokenDocument } from '../mongo-schemas/email-token.mongo.schema';
+import { EmailTokensDocument } from '../mongo-schemas/email-tokens.mongo.schema';
 import { RandomToken } from '../utils/random-token';
 
 @Injectable()
 export class EmailTokenService {
 
-  constructor(@InjectModel(EmailTokenDocument.name) private emailTokenModel: Model<EmailTokenDocument>) { }
+  constructor(@InjectModel(EmailTokensDocument.name) private emailTokenModel: Model<EmailTokensDocument>) { }
 
   /**
    * Create a new email token
@@ -17,7 +17,7 @@ export class EmailTokenService {
    * @param user the user associated with the email token
    * @returns the created email token 
    */
-  async createEmailToken(user: UserDocument) {
+  async createEmailToken(user: AccountDocument): Promise<EmailTokensDocument> {
     return new this.emailTokenModel({
       user: user
     }).save();
@@ -30,7 +30,7 @@ export class EmailTokenService {
    * @returns the updated email token
    * 
    */
-  async createNewConfirmToken(user: UserDocument): Promise<EmailTokenDocument> {
+  async createNewConfirmToken(user: AccountDocument): Promise<EmailTokensDocument> {
     // Get original email token
     const emailToken = await this.emailTokenModel.findOne({ user });
     // If email token does not exist, create it
@@ -55,7 +55,7 @@ export class EmailTokenService {
    *  - token is not found
    *  - token is not valid (expired)
    */
-  async validateConfirmToken(confirmToken: string): Promise<EmailTokenDocument> {
+  async validateConfirmToken(confirmToken: string): Promise<EmailTokensDocument> {
     // Get email token
     const emailToken = await this.emailTokenModel.findOne({ 'confirmToken.value': confirmToken }).populate('user');
     // Token not found
@@ -77,7 +77,7 @@ export class EmailTokenService {
    * @returns the updated email token
    * 
    */
-  async createNewResetPasswordToken(user: UserDocument) {
+  async createNewResetPasswordToken(user: AccountDocument) {
     // Get original email token
     const emailToken = await this.emailTokenModel.findOne({ user });
     // If email token does not exist, create it
@@ -103,7 +103,7 @@ export class EmailTokenService {
    *  - token is not found
    *  - token is not valid (expired)
    */
-  async validateResetPasswordToken(resetPasswordToken: string): Promise<EmailTokenDocument> {
+  async validateResetPasswordToken(resetPasswordToken: string): Promise<EmailTokensDocument> {
     // Get email token
     const emailToken = await this.emailTokenModel.findOne({ 'resetPasswordToken.value': resetPasswordToken }).populate('user');
     // Token not found
