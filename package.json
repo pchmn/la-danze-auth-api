@@ -19,7 +19,8 @@
     "test:cov": "jest --config jest.config.json --runInBand --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "schema": "ts-node src/core/graphql/generate-typings"
+    "schema": "ts-node src/core/graphql/generate-typings",
+    "maildev": "maildev"
   },
   "dependencies": {
     "@nestjs/common": "^7.0.0",
@@ -67,6 +68,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^2.20.1",
     "jest": "^26.4.2",
+    "maildev": "^1.1.0",
     "mongodb-memory-server": "^6.9.2",
     "prettier": "^1.19.1",
     "supertest": "^4.0.2",
