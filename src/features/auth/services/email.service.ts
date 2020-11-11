@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
@@ -8,6 +8,8 @@ import { EmailTokensDocument } from '../mongo-schemas/email-tokens.mongo.schema'
 
 @Injectable()
 export class EmailService {
+
+  static readonly CLASS_NAME = 'EmailService';
 
   private transporter: Mail;
 
@@ -24,8 +26,10 @@ export class EmailService {
       html: EmailTemplate.emailConfirmation(emailToken),
     }
 
-    this.transporter.sendMail(message, (err) => {
-      console.log(err);
+    this.transporter.sendMail(message, (err, info) => {
+      if (err) {
+        Logger.log(err.message, EmailService.CLASS_NAME);
+      }
     })
   }
 }

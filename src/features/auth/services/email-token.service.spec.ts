@@ -99,7 +99,7 @@ describe('EmailTokenService', () => {
   });
 
   it('[createNewConfirmToken] should create a new email token (email token does not exist)', async () => {
-    const user = await userModel.findOne({ username: 'user3' });
+    const user = await userModel.findOne({ username: 'user7' });
     const emailToken = await service.createNewConfirmToken(user);
     // Compare user
     expect(emailToken.user._id).toEqual(user._id);
@@ -125,7 +125,7 @@ describe('EmailTokenService', () => {
   });
 
   it('[createNewResetPasswordToken] should create a new email token (email token does not exist)', async () => {
-    const user = await userModel.findOne({ username: 'user7' });
+    const user = await userModel.findOne({ username: 'user8' });
     const emailToken = await service.createNewResetPasswordToken(user);
     // Compare user
     expect(emailToken.user._id).toEqual(user._id);

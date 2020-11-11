@@ -67,17 +67,12 @@ EmailTokensSchema.virtual('isResetPasswordTokenValid').get(function () {
 });
 
 EmailTokensSchema.method('getResetPasswordTokenExpiresAt', function (): number {
-  if (this.resetPasswordToken.expiresAt instanceof Date) {
-    return this.resetPasswordToken.expiresAt.getTime();
-  }
-  return typeof this.resetPasswordToken.expiresAt === 'number' ? this.resetPasswordToken.expiresAt : 0;
+  return this.resetPasswordToken.expiresAt ? this.resetPasswordToken.expiresAt.getTime() : 0;
 });
 
 EmailTokensSchema.method('getConfirmTokenExpiresAt', function (): number {
-  if (this.confirmToken.expiresAt instanceof Date) {
-    return this.confirmToken.expiresAt.getTime();
-  }
-  return typeof this.confirmToken.expiresAt === 'number' ? this.confirmToken.expiresAt : 0;
+  // Confirm token expiresAt never null or undefined
+  return this.confirmToken.expiresAt.getTime();
 });
 
 EmailTokensSchema.set('toObject', { virtuals: true })

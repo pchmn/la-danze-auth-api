@@ -35,6 +35,7 @@ export class InMemoryMongodb {
       new userModel({ email: { value: 'user5@test.com' }, username: 'user5', password: bcrypt.hashSync('pwd5', bcrypt.genSaltSync(10)), roles: [] }),
       new userModel({ email: { value: 'user6@test.com' }, username: 'user6', password: bcrypt.hashSync('pwd6', bcrypt.genSaltSync(10)), roles: [] }),
       new userModel({ email: { value: 'user7@test.com' }, username: 'user7', password: bcrypt.hashSync('pwd7', bcrypt.genSaltSync(10)), roles: [] }),
+      new userModel({ email: { value: 'user8@test.com' }, username: 'user8', password: bcrypt.hashSync('pwd8', bcrypt.genSaltSync(10)), roles: [] }),
     ];
     await userModel.collection.insertMany(users);
 
