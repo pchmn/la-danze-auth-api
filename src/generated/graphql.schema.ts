@@ -26,17 +26,14 @@ export class TokenInput {
     token: string;
 }
 
-export class JwtToken {
-    accessToken: string;
-    refreshToken: string;
+export class ResetPasswordInput {
+    token: string;
+    newPassword: string;
 }
 
-export abstract class IMutation {
-    abstract signup(input: SignupInput): JwtToken | Promise<JwtToken>;
-
-    abstract login(input: LoginInput): JwtToken | Promise<JwtToken>;
-
-    abstract refreshToken(input?: TokenInput): JwtToken | Promise<JwtToken>;
+export class ChangePasswordInput {
+    oldPassword: string;
+    newPassword: string;
 }
 
 export class User {
@@ -55,6 +52,27 @@ export abstract class IQuery {
     abstract hello(): string | Promise<string>;
 
     abstract users(): User[] | Promise<User[]>;
+
+    abstract confirmEmail(token: string): JwtToken | Promise<JwtToken>;
+}
+
+export class JwtToken {
+    accessToken: string;
+    refreshToken: string;
+}
+
+export abstract class IMutation {
+    abstract signup(input: SignupInput): JwtToken | Promise<JwtToken>;
+
+    abstract login(input: LoginInput): JwtToken | Promise<JwtToken>;
+
+    abstract refreshToken(input?: TokenInput): JwtToken | Promise<JwtToken>;
+
+    abstract confirmEmail(input?: TokenInput): JwtToken | Promise<JwtToken>;
+
+    abstract resetPassword(input?: ResetPasswordInput): JwtToken | Promise<JwtToken>;
+
+    abstract changePassword(input?: ChangePasswordInput): JwtToken | Promise<JwtToken>;
 }
 
 export type DateTime = any;

@@ -95,4 +95,18 @@ describe('AuthResolver', () => {
     expect(resolver.confirmEmailQuery('token'))
       .resolves.toEqual(tokens);
   });
+
+  it('[resetPassword] should throw an error', () => {
+    const error = LaDanzeError.invalidToken();
+    authService.resetPassword = jest.fn().mockRejectedValueOnce(error);
+    expect(resolver.resetPassword({ token: 'token', newPassword: 'pwd' }))
+      .rejects.toEqual(error);
+  });
+
+  it('[resetPassword] should return tokens', () => {
+    const tokens = { refreshToken: 'refreshToken', accessToken: 'accessToken' };
+    authService.resetPassword = jest.fn().mockResolvedValueOnce(tokens);
+    expect(resolver.resetPassword({ token: 'token', newPassword: 'pwd' }))
+      .resolves.toEqual(tokens);
+  });
 });

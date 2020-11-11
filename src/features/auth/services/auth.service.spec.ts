@@ -181,6 +181,28 @@ describe('AuthService', () => {
     });
   });
 
+  it('[resetPassword] should throw an error (email token not found)', () => {
+    return expect(service.resetPassword({ token: 'notoken', newPassword: 'pwd' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound))
+  });
+
+  it('[resetPassword] shTokenould throw an error (email token not valid)', () => {
+    return expect(service.resetPassword({ token: 'token4', newPassword: 'pwd' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput))
+  });
+
+  it('[resetPassword] should return token', async () => {
+    const oldUser = await userModel.findOne({ username: 'user5' });
+    const tokens = await service.resetPassword({ token: 'token5', newPassword: 'pwd' });
+    const newUser = await userModel.findOne({ username: 'user5' });
+    // Verify password has changed
+    expect(oldUser.password).not.toEqual(newUser.password);
+    // Check refresh token
+    expect(tokens.refreshToken.length).toEqual(64);
+    // Check access token
+    jwt.verify(tokens.accessToken, configService.get('jwt.publicKey'), (err, decoded) => {
+      expect(decoded.username).toEqual('user5');
+    });
+  });
+
 
   it('[refreshToken] should throw an error (token not valid)', () => {
     return expect(service.refreshToken({ token: 'token2' })).rejects.toEqual(LaDanzeError.invalidToken());

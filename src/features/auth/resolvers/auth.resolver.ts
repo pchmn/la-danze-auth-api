@@ -1,5 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { JwtToken, LoginInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
+import { JwtToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
 import { AuthService } from '../services/auth.service';
 
 @Resolver()
@@ -27,8 +27,13 @@ export class AuthResolver {
     return this.authService.refreshToken(input);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => JwtToken)
   async confirmEmail(@Args('input') input: TokenInput) {
     return this.authService.confirmEmail(input);
+  }
+
+  @Mutation(() => JwtToken)
+  async resetPassword(@Args('input') input: ResetPasswordInput) {
+    return this.authService.resetPassword(input);
   }
 }

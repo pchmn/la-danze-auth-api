@@ -5,7 +5,7 @@ import { ApolloError } from 'apollo-server-express';
 import * as jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/features/user.mongo.schema';
-import { JwtToken, LoginInput, SignupInput, TokenInput, UserRoleType } from 'src/generated/graphql.schema';
+import { JwtToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput, UserRoleType } from 'src/generated/graphql.schema';
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { MongooseValidationErrorMapper } from 'src/shared/errors/mongoose-validation-error-mapper';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
@@ -127,6 +127,27 @@ export class AuthService {
     const validatedEmailToken = await this.emailTokenService.validateConfirmToken(input.token);
     // Active user
     validatedEmailToken.user.isEmailConfirmed = true;
+    const updatedUser = await validatedEmailToken.user.save();
+    // Create refresh and access tokens
+    return this.createTokens(updatedUser);
+  }
+
+  /**
+   * Reset password
+   * 
+   * @param input the reset password input (token, new password)
+   * @returns refresh and access tokens
+   * 
+   * @throws {LaDanzeError}
+   * This exception is thrown if:
+   *  - token is not found
+   *  - token is not valid (expired)
+   */
+  async resetPassword(input: ResetPasswordInput): Promise<JwtToken> {
+    // Validate token
+    const validatedEmailToken = await this.emailTokenService.validateResetPasswordToken(input.token);
+    // Change password
+    validatedEmailToken.user.password = input.newPassword;
     const updatedUser = await validatedEmailToken.user.save();
     // Create refresh and access tokens
     return this.createTokens(updatedUser);

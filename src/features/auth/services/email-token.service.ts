@@ -70,51 +70,51 @@ export class EmailTokenService {
     return emailToken;
   }
 
-  // /**
-  //  * Create a new email change password token
-  //  * 
-  //  * @param user the user associated with the change password token
-  //  * @returns the updated email token
-  //  * 
-  //  */
-  // async createNewResetPasswordToken(user: UserDocument) {
-  //   // Get original email token
-  //   const emailToken = await this.emailTokenModel.findOne({ user });
-  //   // If email token does not exist, create it
-  //   if (!emailToken) {
-  //     return new this.emailTokenModel({
-  //       user: user,
-  //       changePasswordToken: { value: RandomToken.create() }
-  //     }).save();
-  //   }
-  //   // Create new change password token
-  //   emailToken.resetPasswordToken = { value: RandomToken.create() };
-  //   return emailToken.save();
-  // }
+  /**
+   * Create a new email change password token
+   * 
+   * @param user the user associated with the change password token
+   * @returns the updated email token
+   * 
+   */
+  async createNewResetPasswordToken(user: UserDocument) {
+    // Get original email token
+    const emailToken = await this.emailTokenModel.findOne({ user });
+    // If email token does not exist, create it
+    if (!emailToken) {
+      return new this.emailTokenModel({
+        user: user,
+        resetPasswordToken: { value: RandomToken.create() }
+      }).save();
+    }
+    // Create new reset password token
+    emailToken.resetPasswordToken = { value: RandomToken.create() };
+    return emailToken.save();
+  }
 
-  // /**
-  //  * Validate a reset password token
-  //  * 
-  //  * @param resetPasswordToken the reset password token
-  //  * @returns the email token
-  //  * 
-  //  * @throws {LaDanzeError}
-  //  * This exception is thrown if:
-  //  *  - token is not found
-  //  *  - token is not valid (expired)
-  //  */
-  // async validateResetPasswordToken(resetPasswordToken: string): Promise<EmailTokenDocument> {
-  //   // Get email token
-  //   const emailToken = await this.emailTokenModel.findOne({ 'resetPasswordToken.value': resetPasswordToken }).populate('user');
-  //   // Token not found
-  //   if (!emailToken) {
-  //     throw LaDanzeError.create('changePasswordToken not found', ErrorCode.NotFound);
-  //   }
-  //   // Token not valid (expired)
-  //   if (!emailToken.isResetPasswordTokenValid) {
-  //     throw LaDanzeError.create('changePasswordToken not valid', ErrorCode.WrongInput);
-  //   }
-  //   // Token valid
-  //   return emailToken;
-  // }
+  /**
+   * Validate a reset password token
+   * 
+   * @param resetPasswordToken the reset password token
+   * @returns the email token
+   * 
+   * @throws {LaDanzeError}
+   * This exception is thrown if:
+   *  - token is not found
+   *  - token is not valid (expired)
+   */
+  async validateResetPasswordToken(resetPasswordToken: string): Promise<EmailTokenDocument> {
+    // Get email token
+    const emailToken = await this.emailTokenModel.findOne({ 'resetPasswordToken.value': resetPasswordToken }).populate('user');
+    // Token not found
+    if (!emailToken) {
+      throw LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound);
+    }
+    // Token not valid (expired)
+    if (!emailToken.isResetPasswordTokenValid) {
+      throw LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput);
+    }
+    // Token valid
+    return emailToken;
+  }
 }

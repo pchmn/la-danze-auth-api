@@ -85,8 +85,10 @@ describe('EmailTokenService', () => {
 
   it('[createNewConfirmToken] should create a new confirm token (email token exists)', async () => {
     const emailToken = await emailTokenModel.findOne({ 'confirmToken.value': 'token1' }).populate('user');
+    console.log('before', emailToken.confirmToken.value);
 
     const updatedEmailToken = await service.createNewConfirmToken(emailToken.user);
+    console.log('before', emailToken.confirmToken.value);
     // Compare user
     expect(emailToken.user._id).toEqual(updatedEmailToken.user._id);
     // Compare token
@@ -109,5 +111,50 @@ describe('EmailTokenService', () => {
     expect(emailToken.confirmToken.value).not.toBeUndefined();
     // Check confirm expiresAt (7 days)
     expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+  });
+
+  it('[createNewResetPasswordToken] should create a new reset password token (email token exists)', async () => {
+    const emailToken = await emailTokenModel.findOne({ 'confirmToken.value': 'token6' }).populate('user');
+
+    const updatedEmailToken = await service.createNewResetPasswordToken(emailToken.user);
+    // Compare user
+    expect(updatedEmailToken.user._id).toEqual(updatedEmailToken.user._id);
+    // Compare token
+    expect(updatedEmailToken.confirmToken.value).not.toBeUndefined();
+
+    // Check token length
+    expect(updatedEmailToken.resetPasswordToken.value.length).toBe(64);
+    // Check expiresAt (7 days)
+    expect(updatedEmailToken.resetPasswordToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+  });
+
+  it('[createNewResetPasswordToken] should create a new email token (email token does not exist)', async () => {
+    const user = await userModel.findOne({ username: 'user7' });
+    const emailToken = await service.createNewResetPasswordToken(user);
+    // Compare user
+    expect(emailToken.user._id).toEqual(user._id);
+    // Check confirm token length
+    expect(emailToken.confirmToken.value.length).toBe(64);
+    // Check confirm expiresAt (7 days)
+    expect(emailToken.confirmToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+
+    // Check token length
+    expect(emailToken.resetPasswordToken.value.length).toBe(64);
+    // Check expiresAt (7 days)
+    expect(emailToken.resetPasswordToken.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+  });
+
+  it('[validateResetPasswordToken] should throw an error (token not found)', () => {
+    return expect(service.validateResetPasswordToken('notoken')).rejects.toEqual(LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound));
+  });
+
+  it('[validateResetPasswordToken] should throw an error (token not valid)', () => {
+    return expect(service.validateResetPasswordToken('token4')).rejects.toEqual(LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput));
+  });
+
+  it('[validateResetPasswordToken] should validate reset password token', async () => {
+    const emailToken = await service.validateResetPasswordToken('token5');
+    expect(emailToken.resetPasswordToken.value).toEqual('token5');
+    expect(emailToken.user.username).toEqual('user5');
   });
 });

@@ -12,13 +12,13 @@ export class EmailTokenDocument extends Document {
   user: UserDocument;
 
   @Prop(raw({
-    value: { type: String, default: RandomToken.create() },
+    value: { type: String, default: RandomToken.create(), unique: true },
     expiresAt: { type: Date, default: Date.now() + RandomToken.TOKEN_LIFE_TIME }
   }))
   confirmToken: Record<string, any>;
 
   @Prop(raw({
-    value: { type: String },
+    value: { type: String, unique: true },
     expiresAt: { type: Date }
   }))
   resetPasswordToken: Record<string, any>;
@@ -58,5 +58,5 @@ EmailTokenSchema.virtual('isConfirmTokenValid').get(function () {
 });
 
 EmailTokenSchema.virtual('isResetPasswordTokenValid').get(function () {
-  return this.resetPasswordToken && (Date.now() > this.resetPasswordToken.expiresAt);
+  return this.resetPasswordToken && (Date.now() < this.resetPasswordToken.expiresAt);
 });

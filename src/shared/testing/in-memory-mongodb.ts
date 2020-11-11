@@ -33,6 +33,8 @@ export class InMemoryMongodb {
       new userModel({ email: 'user3@test.com', username: 'user3', password: bcrypt.hashSync('pwd3', bcrypt.genSaltSync(10)), roles: [] }),
       new userModel({ email: 'user4@test.com', username: 'user4', password: bcrypt.hashSync('pwd4', bcrypt.genSaltSync(10)), roles: [] }),
       new userModel({ email: 'user5@test.com', username: 'user5', password: bcrypt.hashSync('pwd5', bcrypt.genSaltSync(10)), roles: [] }),
+      new userModel({ email: 'user6@test.com', username: 'user6', password: bcrypt.hashSync('pwd6', bcrypt.genSaltSync(10)), roles: [] }),
+      new userModel({ email: 'user7@test.com', username: 'user7', password: bcrypt.hashSync('pwd7', bcrypt.genSaltSync(10)), roles: [] }),
     ];
     await userModel.collection.insertMany(users);
 
@@ -54,11 +56,13 @@ export class InMemoryMongodb {
 
     // Insert email tokens
     if (emailTokenModel) {
-      const emailTokens = [
-        new emailTokenModel({ user: users[0], confirmToken: { value: 'token1', expiresAt: Date.now() } }),
-        new emailTokenModel({ user: users[1], confirmToken: { value: 'token2' } })
-      ];
-      await emailTokenModel.collection.insertMany(emailTokens);
+      // We save each email token, si that pre save is fired, and expiresAt date will be set by default
+      await new emailTokenModel({ user: users[0], confirmToken: { value: 'token1', expiresAt: Date.now() } }).save();
+      await new emailTokenModel({ user: users[1], confirmToken: { value: 'token2' } }).save();
+      await new emailTokenModel({ user: users[2], confirmToken: { value: 'token3' } }).save();
+      await new emailTokenModel({ user: users[3], resetPasswordToken: { value: 'token4', expiresAt: Date.now() } }).save();
+      await new emailTokenModel({ user: users[4], resetPasswordToken: { value: 'token5' } }).save();
+      await new emailTokenModel({ user: users[5], confirmToken: { value: 'token6' } }).save();
     }
   }
 }

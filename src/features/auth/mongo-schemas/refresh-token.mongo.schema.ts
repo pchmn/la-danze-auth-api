@@ -10,7 +10,7 @@ export class RefreshTokenDocument extends Document {
   @Prop({ type: SchemaMongoose.Types.ObjectId, ref: UserDocument.name })
   user: UserDocument;
 
-  @Prop()
+  @Prop({ unique: true })
   token: string;
 
   @Prop()
