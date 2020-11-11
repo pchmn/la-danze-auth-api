@@ -92,7 +92,7 @@ describe('RefreshTokenService', () => {
   it('[refreshToken] should refresh token', async () => {
     let document = await service.refreshToken('token5');
     // Check user
-    expect(document.user.username).toEqual('user1');
+    expect(document.user.username).toEqual('user5');
     // Check token length
     expect(document.token.length).toBe(64);
     // Check expiresAt (7 days)

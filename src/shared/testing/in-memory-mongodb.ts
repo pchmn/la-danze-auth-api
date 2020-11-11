@@ -41,15 +41,15 @@ export class InMemoryMongodb {
     // Insert refresh tokens
     if (refreshTokenModel) {
       const refreshTokens = [
-        new refreshTokenModel({ token: 'token1', expiresAt: Date.now() + 60 * 60 * 24 * 7 * 1000, user: users[0] }),
+        new refreshTokenModel({ token: 'token1', user: users[0] }),
         // Will be expired at test time
         new refreshTokenModel({ token: 'token2', expiresAt: Date.now(), user: users[1] }),
         // Revoked
-        new refreshTokenModel({ token: 'token3', expiresAt: Date.now() + 60 * 60 * 24 * 7 * 1000, revokedAt: Date.now(), user: users[2] }),
+        new refreshTokenModel({ token: 'token3', revokedAt: Date.now(), user: users[2] }),
         // Token to revoke
-        new refreshTokenModel({ token: 'token4', expiresAt: Date.now() + 60 * 60 * 24 * 7 * 1000, user: users[0] }),
+        new refreshTokenModel({ token: 'token4', user: users[3] }),
         // Token to refresh
-        new refreshTokenModel({ token: 'token5', expiresAt: Date.now() + 60 * 60 * 24 * 7 * 1000, user: users[0] }),
+        new refreshTokenModel({ token: 'token5', user: users[4] }),
       ];
       await refreshTokenModel.collection.insertMany(refreshTokens);
     }

@@ -8,7 +8,7 @@ import { RandomToken } from "../utils/random-token";
 })
 export class EmailTokenDocument extends Document {
 
-  @Prop({ type: SchemaMongoose.Types.ObjectId, ref: UserDocument.name })
+  @Prop({ type: SchemaMongoose.Types.ObjectId, ref: UserDocument.name, unique: true })
   user: UserDocument;
 
   @Prop(raw({
@@ -18,7 +18,7 @@ export class EmailTokenDocument extends Document {
   confirmToken: Record<string, any>;
 
   @Prop(raw({
-    value: { type: String, unique: true },
+    value: { type: String },
     expiresAt: { type: Date }
   }))
   resetPasswordToken: Record<string, any>;

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaMongoose } from "mongoose";
 import { UserDocument } from "src/features/user.mongo.schema";
+import { RandomToken } from "../utils/random-token";
 
 @Schema({
   collection: 'refresh_tokens'
@@ -13,7 +14,7 @@ export class RefreshTokenDocument extends Document {
   @Prop({ unique: true })
   token: string;
 
-  @Prop()
+  @Prop({ default: Date.now() + RandomToken.TOKEN_LIFE_TIME })
   expiresAt: Date;
 
   @Prop({ type: Date, default: Date.now() })
