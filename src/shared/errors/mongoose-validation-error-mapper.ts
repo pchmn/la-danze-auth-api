@@ -9,8 +9,8 @@ export class MongooseValidationErrorMapper {
       return LaDanzeError.unknownError();
     }
 
-    const emailInvalidErrorMsg = validatorErrors.email && validatorErrors.email.kind === 'invalid' ? validatorErrors.email.message : null;
-    const uniqueEmailErrorMsg = validatorErrors.email && validatorErrors.email.kind === 'unique' ? validatorErrors.email.message : null;
+    const emailInvalidErrorMsg = validatorErrors['email.value'] && validatorErrors['email.value'].kind === 'invalid' ? validatorErrors['email.value'].message.replace('email.value', 'email') : null;
+    const uniqueEmailErrorMsg = validatorErrors['email.value'] && validatorErrors['email.value'].kind === 'unique' ? validatorErrors['email.value'].message.replace('email.value', 'email') : null;
     const uniqueUsernameErrorMsg = validatorErrors.username && validatorErrors.username.kind === 'unique' ? validatorErrors.username.message : null;
 
     if (!emailInvalidErrorMsg && !uniqueEmailErrorMsg && !uniqueUsernameErrorMsg) {

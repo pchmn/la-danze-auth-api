@@ -1,0 +1,57 @@
+<mjml font-family="Work Sans, Open Sans">
+  <mj-head>
+    <mj-font name="Work Sans" href="https://fonts.googleapis.com/css?family=Work+Sans" />
+    <mj-attributes>
+      <mj-text font-size="15px" font-family="Work Sans, Open Sans" align="center" color="#fff" />
+    </mj-attributes>
+    <mj-style inline="inline">
+      .rounded_top > table { border-collapse:separate; border-top-left-radius:50px; border-top-right-radius:50px; }
+      .rounded_bottom > table { border-collapse:separate; border-bottom-left-radius:50px; border-bottom-right-radius:50px; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#37474f">
+    <mj-wrapper padding-top="50px" padding-bottom="50px">
+
+      <mj-section background-color="#263238">
+        <mj-column css-class="rounded_top">
+          <mj-image width="100px" src="http://localhost:3010/public/logo.png" padding="30px" padding-bottom="5px"></mj-image>
+          <mj-text padding-bottom="30px">La Danze en LDC</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section background-color="#455a64">
+        <mj-column padding="20px 30px">
+          <mj-text font-size="30px" font-weight="600">Confirmer l'email</mj-text>
+          <mj-text line-height="25px" padding-top="20px">Bienvenu {{ username }} !
+            Tu dois maintenant vérifier ton email afin d'activer ton compte.</mj-text>
+          <mj-button font-size="18px" background-color="#f44336" font-family="Work Sans, Open Sans" href="{{ confirmEmailUrl }}" padding="20px" padding-bottom="30px" border-radius="50px" border-bottom="solid 1px #b71c1c">Vérifier email</mj-button>
+          <mj-text font-size="12px" padding="0px" color="#b5b5b5">
+            Si le bouton n'apparaît pas, utilises ce lien :
+          </mj-text>
+          <mj-text font-size="12px"><a href="{{ confirmEmailUrl }}" style="color: #ff665b">Vérifier email</a></mj-text>
+        </mj-column>
+      </mj-section>
+
+      <!-- Social -->
+      <mj-section padding-top="50px" padding-bottom="10px">
+        <mj-column>
+          <mj-text font-size="12px" padding="0px" color="#b5b5b5">
+            Email envoyé par <a href="https://auth.api-dev.ladanzeenldc.bzh/" style="color: #ff665b; text-decoration: none">La Danze en LDC</a>
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+      <!-- Social -->
+      <mj-section padding-top="0" padding-bottom="0">
+        <mj-column>
+          <mj-social font-size="15px" icon-size="25px" mode="horizontal" padding="0" padding-top="5px">
+            <mj-social-element name="twitter-noshare" name="twitter" href="https://twitter.com/LaDanzeEnLDC" border-radius="30px">
+            </mj-social-element>
+          </mj-social>
+        </mj-column>
+      </mj-section>
+
+    </mj-wrapper>
+
+  </mj-body>
+</mjml>

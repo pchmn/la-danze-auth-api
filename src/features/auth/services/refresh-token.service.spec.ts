@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Connection, Model } from 'mongoose';
-import { UserDocument, UserSchema } from 'src/features/user.mongo.schema';
+import { AccountDocument, AccountSchema } from 'src/features/account.mongo.schema';
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
@@ -12,7 +12,7 @@ describe('RefreshTokenService', () => {
   let service: RefreshTokenService;
   let connection: Connection;
   let refreshTokenModel: Model<RefreshTokenDocument>;
-  let userModel: Model<UserDocument>;
+  let userModel: Model<AccountDocument>;
 
   afterAll(async () => {
     await connection.close();
@@ -24,7 +24,7 @@ describe('RefreshTokenService', () => {
       imports: [
         InMemoryMongodb.mongooseTestModule(),
         MongooseModule.forFeature([
-          { name: UserDocument.name, schema: UserSchema },
+          { name: AccountDocument.name, schema: AccountSchema },
           { name: RefreshTokenDocument.name, schema: RefreshTokenSchema }
         ])
       ],
@@ -36,7 +36,7 @@ describe('RefreshTokenService', () => {
 
     service = module.get<RefreshTokenService>(RefreshTokenService);
     refreshTokenModel = module.get<Model<RefreshTokenDocument>>(`${RefreshTokenDocument.name}Model`);
-    userModel = module.get<Model<UserDocument>>(`${UserDocument.name}Model`);
+    userModel = module.get<Model<AccountDocument>>(`${AccountDocument.name}Model`);
     connection = await module.get(getConnectionToken());
 
     // Insert test data
@@ -92,7 +92,7 @@ describe('RefreshTokenService', () => {
   it('[refreshToken] should refresh token', async () => {
     let document = await service.refreshToken('token5');
     // Check user
-    expect(document.user.username).toEqual('user1');
+    expect(document.user.username).toEqual('user5');
     // Check token length
     expect(document.token.length).toBe(64);
     // Check expiresAt (7 days)

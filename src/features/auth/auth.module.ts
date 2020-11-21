@@ -1,18 +1,22 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserDocument, UserSchema } from '../user.mongo.schema';
+import { AccountDocument, AccountSchema } from '../account.mongo.schema';
+import { EmailTokensDocument, EmailTokensSchema } from './mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from './mongo-schemas/refresh-token.mongo.schema';
 import { AuthResolver } from './resolvers/auth.resolver';
 import { AuthService } from './services/auth.service';
+import { EmailTokenService } from './services/email-token.service';
+import { EmailService } from './services/email.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: UserDocument.name, schema: UserSchema },
-      { name: RefreshTokenDocument.name, schema: RefreshTokenSchema }
+      { name: AccountDocument.name, schema: AccountSchema },
+      { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
+      { name: EmailTokensDocument.name, schema: EmailTokensSchema }
     ])
   ],
-  providers: [AuthResolver, AuthService, RefreshTokenService]
+  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService, EmailService]
 })
 export class AuthModule { }

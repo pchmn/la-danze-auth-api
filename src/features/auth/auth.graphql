@@ -5,11 +5,17 @@ enum UserRoleType {
   USER
 }
 
-type User {
-  email: String!
+type Email {
+  value: String!
+  isConfirmed: Boolean!
+}
+
+type Account {
+  email: Email!
   username: String!
   roles: [ApplicationRole!]!
   createdAt: DateTime!
+  isActive: Boolean!
 }
 
 type ApplicationRole {
@@ -19,10 +25,10 @@ type ApplicationRole {
 
 type Query {
   hello: String!
-  users: [User!]
+  users: [Account!]
 }
 
-type JwtToken {
+type AuthTokens {
   accessToken: String!
   refreshToken: String!
 }
@@ -42,8 +48,31 @@ input TokenInput {
   token: String!
 }
 
+input ResetPasswordInput {
+  token: String!
+  password: String!
+}
+
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+}
+
+input EmailInput {
+  email: String!
+}
+
+type Query {
+  confirmEmailQuery(token: String!): AuthTokens!
+}
+
 type Mutation {
-  signup(input: SignupInput!): JwtToken!
-  login(input: LoginInput!): JwtToken!
-  refreshToken(input: TokenInput): JwtToken!
+  signup(input: SignupInput!): AuthTokens!
+  login(input: LoginInput!): AuthTokens!
+  refreshToken(input: TokenInput): AuthTokens!
+  confirmEmail(input: TokenInput): AuthTokens!
+  resetPassword(input: ResetPasswordInput): AuthTokens!
+  changePassword(input: ChangePasswordInput): AuthTokens!
+  addEmail(input: EmailInput): AuthTokens!
+  activeEmail(input: EmailInput): AuthTokens!
 }
