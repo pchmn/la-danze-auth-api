@@ -14,6 +14,7 @@ type Email {
 }
 
 type Account {
+  accountId: String!
   email: Email!
   username: String!
   roles: [ApplicationRole!]!

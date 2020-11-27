@@ -51,6 +51,7 @@ export class Email {
 }
 
 export class Account {
+    accountId: string;
     email: Email;
     username: string;
     roles: ApplicationRole[];

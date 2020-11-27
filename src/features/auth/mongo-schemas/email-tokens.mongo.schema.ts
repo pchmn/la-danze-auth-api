@@ -10,7 +10,7 @@ import { RandomStringUtils } from "../../../core/utils/random-string.utils";
 export class EmailTokensDocument extends Document {
 
   @Prop({ type: SchemaMongoose.Types.ObjectId, ref: AccountDocument.name, unique: true })
-  user: AccountDocument;
+  account: AccountDocument;
 
   @Prop(raw({
     value: { type: String, default: RandomStringUtils.createToken, unique: true },

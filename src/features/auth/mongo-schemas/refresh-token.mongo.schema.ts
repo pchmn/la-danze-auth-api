@@ -9,7 +9,7 @@ import { RandomStringUtils } from "../../../core/utils/random-string.utils";
 export class RefreshTokenDocument extends Document {
 
   @Prop({ type: SchemaMongoose.Types.ObjectId, ref: AccountDocument.name })
-  user: AccountDocument;
+  account: AccountDocument;
 
   @Prop({ default: RandomStringUtils.createToken, unique: true })
   token: string;
