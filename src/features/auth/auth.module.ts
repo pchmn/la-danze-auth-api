@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccountDocument, AccountSchema } from '../account/mongo-schemas/account.mongo.schema';
 import { AccountService } from '../account/services/account.service';
@@ -12,6 +14,14 @@ import { RefreshTokenService } from './services/refresh-token.service';
 
 @Module({
   imports: [
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        privateKey: configService.get('jwt.privateKey'),
+        publicKey: configService.get('jwt.publicKey'),
+      }),
+      inject: [ConfigService],
+    }),
     MongooseModule.forFeature([
       { name: AccountDocument.name, schema: AccountSchema },
       { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
