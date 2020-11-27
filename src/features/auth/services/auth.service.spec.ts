@@ -149,7 +149,7 @@ describe('AuthService', () => {
   });
 
   it('[confirmEmail] should throw an error (email token not found)', () => {
-    return expect(service.confirmEmail({ token: 'notoken' })).rejects.toEqual(LaDanzeError.create(ErrorType.ConfirmTokenNotFound))
+    return expect(service.confirmEmail({ token: 'notoken' })).rejects.toEqual(LaDanzeError.create(ErrorType.InvalidConfirmtoken))
   });
 
   it('[confirmEmail] should throw an error (email token not valid)', () => {
@@ -165,7 +165,7 @@ describe('AuthService', () => {
   });
 
   it('[resetPassword] should throw an error (email token not found)', () => {
-    return expect(service.resetPassword({ token: 'notoken', password: '12345678' })).rejects.toEqual(LaDanzeError.create(ErrorType.ResetPasswordTokenNotFound))
+    return expect(service.resetPassword({ token: 'notoken', password: '12345678' })).rejects.toEqual(LaDanzeError.create(ErrorType.InvalidResetPasswordtoken))
   });
 
   it('[resetPassword] shTokenould throw an error (email token not valid)', () => {
