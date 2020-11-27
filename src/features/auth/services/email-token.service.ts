@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AccountDocument } from 'src/features/account/mongo-schemas/account.mongo.schema';
-import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
+import { ErrorType, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { RandomStringUtils } from '../../../core/utils/random-string.utils';
 import { EmailTokensDocument } from '../mongo-schemas/email-tokens.mongo.schema';
 
@@ -14,29 +14,27 @@ export class EmailTokenService {
   /**
    * Create a new email token
    *
-   * @param user the user associated with the email token
+   * @param account the user associated with the email token
    * @returns the created email token 
    */
-  async createEmailToken(user: AccountDocument): Promise<EmailTokensDocument> {
-    return new this.emailTokenModel({
-      user: user
-    }).save();
+  async createEmailToken(account: AccountDocument): Promise<EmailTokensDocument> {
+    return new this.emailTokenModel({ account }).save();
   }
 
   /**
    * Create a new email confirm token
    * 
-   * @param user the user associated with the confirm token
+   * @param account the user associated with the confirm token
    * @returns the updated email token
    * 
    */
-  async createNewConfirmToken(user: AccountDocument): Promise<EmailTokensDocument> {
+  async createNewConfirmToken(account: AccountDocument): Promise<EmailTokensDocument> {
     // Get original email token
-    const emailToken = await this.emailTokenModel.findOne({ user });
+    const emailToken = await this.emailTokenModel.findOne({ account });
     // If email token does not exist, create it
     if (!emailToken) {
       return new this.emailTokenModel({
-        user: user
+        account
       }).save();
     }
     // Create new confirm token
@@ -57,14 +55,10 @@ export class EmailTokenService {
    */
   async validateConfirmToken(confirmToken: string): Promise<EmailTokensDocument> {
     // Get email token
-    const emailToken = await this.emailTokenModel.findOne({ 'confirmToken.value': confirmToken }).populate('user');
-    // Token not found
-    if (!emailToken) {
-      throw LaDanzeError.create('confirmToken not found', ErrorCode.NotFound);
-    }
-    // Token not valid (expired)
-    if (!emailToken.isConfirmTokenValid) {
-      throw LaDanzeError.create('confirmToken not valid', ErrorCode.WrongInput);
+    const emailToken = await this.emailTokenModel.findOne({ 'confirmToken.value': confirmToken }).populate('account');
+    // Token not valid
+    if (!emailToken || !emailToken.isConfirmTokenValid) {
+      throw LaDanzeError.create(ErrorType.InvalidConfirmtoken);
     }
     // Token valid
     return emailToken;
@@ -73,17 +67,17 @@ export class EmailTokenService {
   /**
    * Create a new email change password token
    * 
-   * @param user the user associated with the change password token
+   * @param account the user associated with the change password token
    * @returns the updated email token
    * 
    */
-  async createNewResetPasswordToken(user: AccountDocument) {
+  async createNewResetPasswordToken(account: AccountDocument) {
     // Get original email token
-    const emailToken = await this.emailTokenModel.findOne({ user });
+    const emailToken = await this.emailTokenModel.findOne({ account });
     // If email token does not exist, create it
     if (!emailToken) {
       return new this.emailTokenModel({
-        user: user,
+        account,
         resetPasswordToken: { value: RandomStringUtils.createToken() }
       }).save();
     }
@@ -105,14 +99,10 @@ export class EmailTokenService {
    */
   async validateResetPasswordToken(resetPasswordToken: string): Promise<EmailTokensDocument> {
     // Get email token
-    const emailToken = await this.emailTokenModel.findOne({ 'resetPasswordToken.value': resetPasswordToken }).populate('user');
-    // Token not found
-    if (!emailToken) {
-      throw LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound);
-    }
-    // Token not valid (expired)
-    if (!emailToken.isResetPasswordTokenValid) {
-      throw LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput);
+    const emailToken = await this.emailTokenModel.findOne({ 'resetPasswordToken.value': resetPasswordToken }).populate('account');
+    // Token not valid
+    if (!emailToken || !emailToken.isResetPasswordTokenValid) {
+      throw LaDanzeError.create(ErrorType.InvalidResetPasswordtoken);
     }
     // Token valid
     return emailToken;

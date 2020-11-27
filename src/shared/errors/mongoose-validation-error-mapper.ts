@@ -1,5 +1,5 @@
 import { Error } from 'mongoose';
-import { ErrorCode, LaDanzeError } from './la-danze-error';
+import { ErrorType, LaDanzeError } from './la-danze-error';
 
 export class MongooseValidationErrorMapper {
   static mapEmailAndUsernameErrors(validationError: Error.ValidationError): LaDanzeError {
@@ -18,18 +18,12 @@ export class MongooseValidationErrorMapper {
       return LaDanzeError.unknownError();
     }
 
-    if (uniqueEmailErrorMsg && uniqueUsernameErrorMsg && passwordErrorMsg) {
-      return LaDanzeError.inputError(ErrorCode.EmailAndUsernameAlreadyExist, `${uniqueEmailErrorMsg}, ${uniqueUsernameErrorMsg}, ${passwordErrorMsg}`);
-    } else if (uniqueEmailErrorMsg && uniqueUsernameErrorMsg) {
-      return LaDanzeError.inputError(ErrorCode.EmailAndUsernameAlreadyExist, `${uniqueEmailErrorMsg}, ${uniqueUsernameErrorMsg}`);
-    } else if (uniqueEmailErrorMsg) {
-      return LaDanzeError.inputError(ErrorCode.EmailAlreadyExists, uniqueEmailErrorMsg);
-    } else if (uniqueUsernameErrorMsg) {
-      return LaDanzeError.inputError(ErrorCode.UsernameAlreadyExists, uniqueUsernameErrorMsg);
-    } else if (passwordErrorMsg) {
-      return LaDanzeError.inputError(ErrorCode.UsernameAlreadyExists, passwordErrorMsg);
-    } else {
-      return LaDanzeError.inputError(ErrorCode.EmailInvalid, emailInvalidErrorMsg);
+    switch (true) {
+      case !!uniqueEmailErrorMsg: return LaDanzeError.create(ErrorType.EmailAlreadyExists(uniqueEmailErrorMsg));
+      case !!emailInvalidErrorMsg: return LaDanzeError.create(ErrorType.InvalidEmail(emailInvalidErrorMsg));
+      case !!uniqueUsernameErrorMsg: return LaDanzeError.create(ErrorType.UsernameAlreadyExists(uniqueUsernameErrorMsg));
+      case !!passwordErrorMsg: return LaDanzeError.create(ErrorType.PasswordMinLength);
+      default: return LaDanzeError.unknownError();
     }
   }
 }

@@ -2,23 +2,36 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AccountDocument } from 'src/features/account/mongo-schemas/account.mongo.schema';
-import { LaDanzeError } from 'src/shared/errors/la-danze-error';
+import { AccountService } from 'src/features/account/services/account.service';
+import { ErrorType, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
 
 @Injectable()
 export class RefreshTokenService {
 
-  constructor(@InjectModel(RefreshTokenDocument.name) private refreshTokenModel: Model<RefreshTokenDocument>) { }
+  constructor(
+    @InjectModel(RefreshTokenDocument.name) private refreshTokenModel: Model<RefreshTokenDocument>,
+    private accountService: AccountService) { }
+
+  /**
+   * Create a refresh token and save it in db
+   *
+   * @param account the user associated to the refresh token
+   */
+  async createRefreshToken(account: AccountDocument): Promise<RefreshTokenDocument> {
+    return new this.refreshTokenModel({
+      account: account
+    }).save();
+  }
 
   /**
    * Create a refresh token and save it in db
    *
    * @param user the user associated to the refresh token
    */
-  async createRefreshToken(user: AccountDocument): Promise<RefreshTokenDocument> {
-    return new this.refreshTokenModel({
-      user: user
-    }).save();
+  async createRefreshTokenForAccount(accountId: string): Promise<RefreshTokenDocument> {
+    const account = await this.accountService.findByAccountId(accountId);
+    return new this.refreshTokenModel({ account }).save();
   }
 
   /**
@@ -31,10 +44,10 @@ export class RefreshTokenService {
    */
   async getRefreshToken(token: string): Promise<RefreshTokenDocument> {
     // Get token
-    const document: RefreshTokenDocument = await this.refreshTokenModel.findOne({ token }).populate('user');
+    const document: RefreshTokenDocument = await this.refreshTokenModel.findOne({ token }).populate('account');
     // Check token validity
     if (!document || !document.isActive) {
-      throw LaDanzeError.invalidToken();
+      throw LaDanzeError.create(ErrorType.InvalidRefreshToken);
     }
     return document;
   }
@@ -69,6 +82,6 @@ export class RefreshTokenService {
     // Rirst revoke token
     const document = await this.revokeToken(token);
     // Then create a new one
-    return this.createRefreshToken(document.user);
+    return this.createRefreshToken(document.account);
   }
 }

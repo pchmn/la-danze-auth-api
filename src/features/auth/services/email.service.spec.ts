@@ -37,7 +37,7 @@ describe('EmailService', () => {
 
 
   it('[sendEmail] should send email with good parameters', () => {
-    const emailToken: any = { user: { email: { value: 'test@test.com' }, username: 'username' }, confirmToken: { value: 'token' } };
+    const emailToken: any = { account: { email: { value: 'test@test.com' }, username: 'username' }, confirmToken: { value: 'token' } };
     spyOn(mailTransporterMock, 'sendMail');
 
     // Send email
@@ -49,7 +49,7 @@ describe('EmailService', () => {
   });
 
   it('[sendEmail] should send email', () => {
-    const emailToken: any = { user: { email: { value: 'test@test.com' }, username: 'username' }, confirmToken: { value: 'token' } };
+    const emailToken: any = { account: { email: { value: 'test@test.com' }, username: 'username' }, confirmToken: { value: 'token' } };
     spyOn(Logger, 'log');
 
     // Send email
@@ -59,7 +59,7 @@ describe('EmailService', () => {
   });
 
   it('[sendEmail] should log error', () => {
-    const emailToken: any = { user: { email: { value: 'test@test.com' }, username: 'username' }, confirmToken: { value: 'token' } };
+    const emailToken: any = { account: { email: { value: 'test@test.com' }, username: 'username' }, confirmToken: { value: 'token' } };
     mailTransporterMock.sendMail = sendEmailError;
     spyOn(Logger, 'log');
 

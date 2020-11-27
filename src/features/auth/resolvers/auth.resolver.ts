@@ -1,6 +1,8 @@
+import { UseInterceptors } from '@nestjs/common/decorators';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AccessToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
 import { AuthService } from '../services/auth.service';
+import { RefreshTokenInterceptor } from './refresh-token.interceptor';
 
 @Resolver()
 export class AuthResolver {
@@ -8,47 +10,35 @@ export class AuthResolver {
   constructor(private authService: AuthService) { }
 
   @Query(() => AccessToken)
-  async confirmEmailQuery(@Context() context: any, @Args('token') token: string) {
+  async confirmEmailQuery(@Args('token') token: string) {
     return this.authService.confirmEmailQuery(token);
   }
 
   @Mutation(() => AccessToken)
-  async signup(@Context() context: any, @Args('input') input: SignupInput) {
-    const response = await this.authService.signup(input);
-    this.setRefreshTokenCookie(context, response[0]);
-    return response[1];
+  @UseInterceptors(RefreshTokenInterceptor)
+  async signup(@Args('input') input: SignupInput) {
+    return this.authService.signup(input);
   }
 
   @Mutation(() => AccessToken)
-  async login(@Context() context: any, @Args('input') input: LoginInput) {
-    const response = await this.authService.login(input);
-    this.setRefreshTokenCookie(context, response[0]);
-    return response[1];
+  @UseInterceptors(RefreshTokenInterceptor)
+  async login(@Args('input') input: LoginInput) {
+    return this.authService.login(input);
   }
 
   @Mutation(() => AccessToken)
+  @UseInterceptors(RefreshTokenInterceptor)
   async refreshToken(@Context() context: any) {
-    const response = await this.authService.refreshToken(context.req.cookies['refreshToken']);
-    this.setRefreshTokenCookie(context, response[0]);
-    return response[1];
+    return this.authService.refreshToken(context.req.cookies['refreshToken']);
   }
 
   @Mutation(() => AccessToken)
-  async confirmEmail(@Context() context: any, @Args('input') input: TokenInput) {
-    const response = await this.authService.confirmEmail(input);
-    this.setRefreshTokenCookie(context, response[0]);
-    return response[1];
+  async confirmEmail(@Args('input') input: TokenInput) {
+    return this.authService.confirmEmail(input);
   }
 
   @Mutation(() => AccessToken)
-  async resetPassword(@Context() context: any, @Args('input') input: ResetPasswordInput) {
-    const response = await this.authService.resetPassword(input);
-    this.setRefreshTokenCookie(context, response[0]);
-    return response[1];
-  }
-
-  private setRefreshTokenCookie(context: any, token: string) {
-    // Add refresh token in httpOnly cookie
-    context.res.cookie('refreshToken', token, { httpOnly: true });
+  async resetPassword(@Args('input') input: ResetPasswordInput) {
+    return this.authService.resetPassword(input);
   }
 }

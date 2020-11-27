@@ -20,7 +20,7 @@ export class EmailService {
   sendEmail(emailToken: EmailTokensDocument) {
     const message = {
       from: 'Nodemailer <example@nodemailer.com>',
-      to: emailToken.user.email.value,
+      to: emailToken.account.email.value,
       subject: 'AMP4EMAIL message',
       text: 'For clients with plaintext support only',
       html: EmailTemplate.emailConfirmation(emailToken),

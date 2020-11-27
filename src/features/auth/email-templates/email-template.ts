@@ -8,8 +8,8 @@ export class EmailTemplate {
   static emailConfirmationTemplate: string = fs.readFileSync('src/features/auth/email-templates/email-confirmation.mjml', 'utf-8');
 
   static emailConfirmation(emailToken: EmailTokensDocument): string {
-    const confirmEmailUrl = `http://localhost:3010/graphql?query={confirmEmail(username: "${emailToken.user.username}", token: "${emailToken.confirmToken.value}")}`;
-    const renderedTemplate = Mustache.render(this.emailConfirmationTemplate, { username: emailToken.user.username, confirmEmailUrl });
+    const confirmEmailUrl = `http://localhost:3010/graphql?query={confirmEmail(username: "${emailToken.account.username}", token: "${emailToken.confirmToken.value}")}`;
+    const renderedTemplate = Mustache.render(this.emailConfirmationTemplate, { username: emailToken.account.username, confirmEmailUrl });
     return mjml2html(renderedTemplate, { filePath: '.' }).html;
   }
 }

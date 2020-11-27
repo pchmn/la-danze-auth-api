@@ -1,7 +1,7 @@
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Connection, Model } from 'mongoose';
-import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
+import { ErrorType, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 import { AccountDocument, AccountSchema } from '../mongo-schemas/account.mongo.schema';
 import { AccountService } from './account.service';
@@ -41,32 +41,22 @@ describe('AccountService', () => {
 
   it('[createAccount] should throw an error (email not valid)', () => {
     return expect(service.createAccount({ email: 'user1@test..com', username: 'newUser', password: '12345678' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.EmailInvalid, '"user1@test..com" is not a valid email'));
-  });
-
-  it('[createAccount] should throw an error (unique email and username and password < 8 characters)', () => {
-    return expect(service.createAccount({ email: 'user1@test.com', username: 'user1', password: '1234567' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.EmailAndUsernameAlreadyExist, 'email "user1@test.com" already exists, username "user1" already exists, password must be 8 characters minimum'));
-  });
-
-  it('[createAccount] should throw an error (unique email and username)', () => {
-    return expect(service.createAccount({ email: 'user1@test.com', username: 'user1', password: '12345678' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.EmailAndUsernameAlreadyExist, 'email "user1@test.com" already exists, username "user1" already exists'));
+      .rejects.toEqual(LaDanzeError.create(ErrorType.InvalidEmail('"user1@test..com" is not a valid email')));
   });
 
   it('[createAccount] should throw an error (unique email)', () => {
     return expect(service.createAccount({ email: 'user1@test.com', username: 'uniqueUsername', password: '12345678' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.EmailAlreadyExists, 'email "user1@test.com" already exists'));
+      .rejects.toEqual(LaDanzeError.create(ErrorType.EmailAlreadyExists('email "user1@test.com" already exists')));
   });
 
   it('[createAccount] should throw an error (unique username)', () => {
     return expect(service.createAccount({ email: 'unique@test.com', username: 'user1', password: '12345678' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.UsernameAlreadyExists, 'username "user1" already exists'));
+      .rejects.toEqual(LaDanzeError.create(ErrorType.UsernameAlreadyExists('username "user1" already exists')));
   });
 
   it('[createAccount] should throw an error (password < 8 characters)', () => {
     return expect(service.createAccount({ email: 'unique@test.com', username: 'unique', password: '1234567' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.UsernameAlreadyExists, 'password must be 8 characters minimum'));
+      .rejects.toEqual(LaDanzeError.create(ErrorType.PasswordMinLength));
   });
 
   it('[createAccount] should create a user and return tokens', async () => {

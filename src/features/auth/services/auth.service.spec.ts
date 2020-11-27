@@ -5,7 +5,7 @@ import { generateKeyPair } from 'crypto';
 import { Connection, Model } from 'mongoose';
 import { AccountDocument, AccountSchema } from 'src/features/account/mongo-schemas/account.mongo.schema';
 import { AccountService } from 'src/features/account/services/account.service';
-import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
+import { ErrorType, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 import { EmailTokensDocument, EmailTokensSchema } from '../mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
@@ -101,14 +101,14 @@ describe('AuthService', () => {
 
   it('[signup] should throw an error (email not valid)', () => {
     return expect(service.signup({ email: 'user1@test..com', username: 'newUser', password: '12345678' }))
-      .rejects.toEqual(LaDanzeError.inputError(ErrorCode.EmailInvalid, '"user1@test..com" is not a valid email'));
+      .rejects.toEqual(LaDanzeError.create(ErrorType.InvalidEmail('"user1@test..com" is not a valid email')));
   });
 
   it('[signup] should create a user and return tokens', async () => {
     const spy = spyOn(emailService, 'sendEmail');
-    const tokens = await service.signup({ email: 'unique@test.com', username: 'unique', password: '12345678' });
+    const authToken = await service.signup({ email: 'unique@test.com', username: 'unique', password: '12345678' });
     const createdUser = await accountModel.findOne({ 'email.value': 'unique@test.com' });
-    const emailToken = await emailTokenModel.findOne({ user: createdUser });
+    const emailToken = await emailTokenModel.findOne({ account: createdUser });
     // Check created user
     expect(createdUser).not.toBeNull();
     expect(createdUser.username).toEqual('unique');
@@ -116,94 +116,83 @@ describe('AuthService', () => {
     expect(emailToken.confirmToken.value.length).toEqual(64);
     // Check email sent
     expect(spy).toHaveBeenCalled();
-    // Check refresh token
-    expect(tokens[0].length).toEqual(64);
     // Check access token
-    jwtService.verifyAsync(tokens[1].accessToken).then(decoded => {
+    jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('unique');
     });
   });
 
   it('[login] should throw an error (user not found)', () => {
     return expect(service.login({ emailOrUsername: 'nouser', password: 'pwd1' }))
-      .rejects.toEqual(LaDanzeError.userNotFound('nouser'));
+      .rejects.toEqual(LaDanzeError.create(ErrorType.AccountNotFound('nouser')));
   });
 
   it('[login] should throw an error (wrong password)', () => {
     return expect(service.login({ emailOrUsername: 'user1', password: 'pwd' }))
-      .rejects.toEqual(LaDanzeError.wrongCredentials());
+      .rejects.toEqual(LaDanzeError.create(ErrorType.WrongCredentials));
   });
 
   it('[login] should return tokens (username login)', async () => {
-    const tokens = await service.login({ emailOrUsername: 'user1', password: 'pwd1' });
-    // Check refresh token
-    expect(tokens[0].length).toEqual(64);
+    const authToken = await service.login({ emailOrUsername: 'user1', password: 'pwd1' });
     // Check access token
-    jwtService.verifyAsync(tokens[1].accessToken).then(decoded => {
+    jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user1');
     });
   });
 
   it('[login] should return tokens (email login)', async () => {
-    const tokens = await service.login({ emailOrUsername: 'user1@test.com', password: 'pwd1' });
-    // Check refresh token
-    expect(tokens[0].length).toEqual(64);
+    const authToken = await service.login({ emailOrUsername: 'user1@test.com', password: 'pwd1' });
     // Check access token
-    jwtService.verifyAsync(tokens[1].accessToken).then(decoded => {
+    jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user1');
     });
   });
 
   it('[confirmEmail] should throw an error (email token not found)', () => {
-    return expect(service.confirmEmail({ token: 'notoken' })).rejects.toEqual(LaDanzeError.create('confirmToken not found', ErrorCode.NotFound))
+    return expect(service.confirmEmail({ token: 'notoken' })).rejects.toEqual(LaDanzeError.create(ErrorType.ConfirmTokenNotFound))
   });
 
   it('[confirmEmail] should throw an error (email token not valid)', () => {
-    return expect(service.confirmEmail({ token: 'token1' })).rejects.toEqual(LaDanzeError.create('confirmToken not valid', ErrorCode.WrongInput))
+    return expect(service.confirmEmail({ token: 'token1' })).rejects.toEqual(LaDanzeError.create(ErrorType.InvalidConfirmtoken))
   });
 
   it('[confirmEmail] should return token', async () => {
-    const tokens = await service.confirmEmail({ token: 'token2' });
-    expect(tokens[0].length).toEqual(64);
+    const authToken = await service.confirmEmail({ token: 'token2' });
     // Check access token
-    jwtService.verifyAsync(tokens[1].accessToken).then(decoded => {
+    jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user2');
     });
   });
 
   it('[resetPassword] should throw an error (email token not found)', () => {
-    return expect(service.resetPassword({ token: 'notoken', password: '12345678' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not found', ErrorCode.NotFound))
+    return expect(service.resetPassword({ token: 'notoken', password: '12345678' })).rejects.toEqual(LaDanzeError.create(ErrorType.ResetPasswordTokenNotFound))
   });
 
   it('[resetPassword] shTokenould throw an error (email token not valid)', () => {
-    return expect(service.resetPassword({ token: 'token4', password: '12345678' })).rejects.toEqual(LaDanzeError.create('resetPasswordToken not valid', ErrorCode.WrongInput))
+    return expect(service.resetPassword({ token: 'token4', password: '12345678' })).rejects.toEqual(LaDanzeError.create(ErrorType.InvalidResetPasswordtoken))
   });
 
   it('[resetPassword] should return token', async () => {
     const oldUser = await accountModel.findOne({ username: 'user5' });
-    const tokens = await service.resetPassword({ token: 'token5', password: '12345678' });
+    const authToken = await service.resetPassword({ token: 'token5', password: '12345678' });
     const newUser = await accountModel.findOne({ username: 'user5' });
     // Verify password has changed
     expect(oldUser.password).not.toEqual(newUser.password);
-    // Check refresh token
-    expect(tokens[0].length).toEqual(64);
     // Check access token
-    jwtService.verifyAsync(tokens[1].accessToken).then(decoded => {
+    jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user5');
     });
   });
 
 
   it('[refreshToken] should throw an error (token not valid)', () => {
-    return expect(service.refreshToken('token2')).rejects.toEqual(LaDanzeError.invalidToken());
+    return expect(service.refreshToken('token2')).rejects.toEqual(LaDanzeError.create(ErrorType.InvalidRefreshToken));
   });
 
   it('[refreshToken] should return tokens', async () => {
-    const tokens = await service.refreshToken('token5');
-    // Check refresh token
-    expect(tokens[0].length).toEqual(64);
+    const authToken = await service.refreshToken('token5');
     // Check access token
-    jwtService.verifyAsync(tokens[1].accessToken).then(decoded => {
+    jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user5');
     });
   });
