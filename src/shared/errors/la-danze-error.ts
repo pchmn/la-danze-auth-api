@@ -1,4 +1,4 @@
-import { ApolloError } from "apollo-server-express";
+import { ApolloError, UserInputError } from "apollo-server-express";
 
 export class LaDanzeError {
 
@@ -47,7 +47,11 @@ export class LaDanzeError {
   }
 
   static create(message: string, code: ErrorCode) {
-    return new ApolloError(message, code);
+    return new ApolloError(message, `${code}`);
+  }
+
+  static inputError(code: number, message: string, additionalMessage?: string) {
+    return new UserInputError('can\'t validate user input', { code, message, additionalMessage });
   }
 }
 
@@ -56,5 +60,9 @@ export enum ErrorCode {
   NotFound = 'NOT_FOUND',
   Forbidden = 'FORBIDDEN',
   WrongInput = 'WRONG_INPUT',
-  ServerError = 'SERVER_ERROR'
+  ServerError = 'SERVER_ERROR',
+  EmailAlreadyExists = 100,
+  UsernameAlreadyExists = 101,
+  EmailAndUsernameAlreadyExist = 102,
+  EmailInvalid = 103
 }

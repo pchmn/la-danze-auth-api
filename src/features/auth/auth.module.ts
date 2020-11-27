@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AccountDocument, AccountSchema } from '../account.mongo.schema';
+import { AccountDocument, AccountSchema } from '../account/mongo-schemas/account.mongo.schema';
+import { AccountService } from '../account/services/account.service';
 import { EmailTokensDocument, EmailTokensSchema } from './mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from './mongo-schemas/refresh-token.mongo.schema';
 import { AuthResolver } from './resolvers/auth.resolver';
@@ -17,6 +18,6 @@ import { RefreshTokenService } from './services/refresh-token.service';
       { name: EmailTokensDocument.name, schema: EmailTokensSchema }
     ])
   ],
-  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService, EmailService]
+  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService, EmailService, AccountService]
 })
 export class AuthModule { }

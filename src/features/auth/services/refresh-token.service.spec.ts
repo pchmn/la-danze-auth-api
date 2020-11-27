@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Connection, Model } from 'mongoose';
-import { AccountDocument, AccountSchema } from 'src/features/account.mongo.schema';
+import { AccountDocument, AccountSchema } from 'src/features/account/mongo-schemas/account.mongo.schema';
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';

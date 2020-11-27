@@ -1,8 +1,9 @@
 import { Prop, raw, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as bcrypt from 'bcrypt';
-import * as EmailValidator from 'email-validator';
 import { Document } from 'mongoose';
 import * as uniqueValidator from 'mongoose-unique-validator';
+import { RandomStringUtils } from "src/core/utils/random-string.utils";
+import { ValidatorUtils } from "src/core/utils/validator.utils";
 import { ApplicationRole } from "src/generated/graphql.schema";
 
 const SALT_ROUNDS = 10;
@@ -12,6 +13,9 @@ const SALT_ROUNDS = 10;
 })
 export class AccountDocument extends Document {
 
+  @Prop({ required: true, unique: true, immutable: true, default: RandomStringUtils.createId })
+  accountId: string;
+
   @Prop(raw({
     value: {
       type: String,
@@ -19,7 +23,7 @@ export class AccountDocument extends Document {
       unique: true,
       validate: {
         validator: (email) => {
-          return EmailValidator.validate(email);
+          return ValidatorUtils.isEmailValid(email);
         },
         message: (props) => `"${props.value}" is not a valid email`,
         type: 'invalid'
@@ -32,7 +36,7 @@ export class AccountDocument extends Document {
   @Prop({ required: true, unique: true })
   username: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, minlength: [8, 'password must be 8 characters minimum'] })
   password: string;
 
   @Prop()
@@ -43,7 +47,7 @@ export class AccountDocument extends Document {
 
   isActive: boolean;
 
-  validatePassword: Function;
+  validatePassword: (password: string) => Promise<boolean>;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(AccountDocument);

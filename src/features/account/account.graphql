@@ -1,0 +1,31 @@
+enum AccountRoleType {
+  ADMIN
+  USER
+}
+
+type ApplicationRole {
+  application: String!
+  role: AccountRoleType!
+}
+
+type Email {
+  value: String!
+  isConfirmed: Boolean!
+}
+
+type Account {
+  email: Email!
+  username: String!
+  roles: [ApplicationRole!]!
+  createdAt: DateTime!
+  isActive: Boolean!
+}
+
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+}
+
+type Mutation {
+  changePassword(input: ChangePasswordInput): AccessToken!
+}

@@ -6,9 +6,14 @@
 
 /* tslint:disable */
 /* eslint-disable */
-export enum UserRoleType {
+export enum AccountRoleType {
     ADMIN = "ADMIN",
     USER = "USER"
+}
+
+export class ChangePasswordInput {
+    oldPassword: string;
+    newPassword: string;
 }
 
 export class SignupInput {
@@ -31,13 +36,13 @@ export class ResetPasswordInput {
     password: string;
 }
 
-export class ChangePasswordInput {
-    oldPassword: string;
-    newPassword: string;
-}
-
 export class EmailInput {
     email: string;
+}
+
+export class ApplicationRole {
+    application: string;
+    role: AccountRoleType;
 }
 
 export class Email {
@@ -53,9 +58,18 @@ export class Account {
     isActive: boolean;
 }
 
-export class ApplicationRole {
-    application: string;
-    role: UserRoleType;
+export abstract class IMutation {
+    abstract changePassword(input?: ChangePasswordInput): AccessToken | Promise<AccessToken>;
+
+    abstract signup(input: SignupInput): AccessToken | Promise<AccessToken>;
+
+    abstract login(input: LoginInput): AccessToken | Promise<AccessToken>;
+
+    abstract refreshToken(): AccessToken | Promise<AccessToken>;
+
+    abstract confirmEmail(input?: TokenInput): AccessToken | Promise<AccessToken>;
+
+    abstract resetPassword(input?: ResetPasswordInput): AccessToken | Promise<AccessToken>;
 }
 
 export abstract class IQuery {
@@ -63,30 +77,11 @@ export abstract class IQuery {
 
     abstract users(): Account[] | Promise<Account[]>;
 
-    abstract confirmEmailQuery(token: string): AuthTokens | Promise<AuthTokens>;
+    abstract confirmEmailQuery(token: string): AccessToken | Promise<AccessToken>;
 }
 
-export class AuthTokens {
+export class AccessToken {
     accessToken: string;
-    refreshToken: string;
-}
-
-export abstract class IMutation {
-    abstract signup(input: SignupInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract login(input: LoginInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract refreshToken(input?: TokenInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract confirmEmail(input?: TokenInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract resetPassword(input?: ResetPasswordInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract changePassword(input?: ChangePasswordInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract addEmail(input?: EmailInput): AuthTokens | Promise<AuthTokens>;
-
-    abstract activeEmail(input?: EmailInput): AuthTokens | Promise<AuthTokens>;
 }
 
 export type DateTime = any;

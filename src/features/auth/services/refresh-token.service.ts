@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AccountDocument } from 'src/features/account.mongo.schema';
+import { AccountDocument } from 'src/features/account/mongo-schemas/account.mongo.schema';
 import { LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { RefreshTokenDocument } from '../mongo-schemas/refresh-token.mongo.schema';
 

@@ -1,36 +1,12 @@
 scalar DateTime
 
-enum UserRoleType {
-  ADMIN
-  USER
-}
-
-type Email {
-  value: String!
-  isConfirmed: Boolean!
-}
-
-type Account {
-  email: Email!
-  username: String!
-  roles: [ApplicationRole!]!
-  createdAt: DateTime!
-  isActive: Boolean!
-}
-
-type ApplicationRole {
-  application: String!
-  role: UserRoleType!
-}
-
 type Query {
   hello: String!
   users: [Account!]
 }
 
-type AuthTokens {
+type AccessToken {
   accessToken: String!
-  refreshToken: String!
 }
 
 input SignupInput {
@@ -53,26 +29,18 @@ input ResetPasswordInput {
   password: String!
 }
 
-input ChangePasswordInput {
-  oldPassword: String!
-  newPassword: String!
-}
-
 input EmailInput {
   email: String!
 }
 
 type Query {
-  confirmEmailQuery(token: String!): AuthTokens!
+  confirmEmailQuery(token: String!): AccessToken!
 }
 
 type Mutation {
-  signup(input: SignupInput!): AuthTokens!
-  login(input: LoginInput!): AuthTokens!
-  refreshToken(input: TokenInput): AuthTokens!
-  confirmEmail(input: TokenInput): AuthTokens!
-  resetPassword(input: ResetPasswordInput): AuthTokens!
-  changePassword(input: ChangePasswordInput): AuthTokens!
-  addEmail(input: EmailInput): AuthTokens!
-  activeEmail(input: EmailInput): AuthTokens!
+  signup(input: SignupInput!): AccessToken!
+  login(input: LoginInput!): AccessToken!
+  refreshToken: AccessToken!
+  confirmEmail(input: TokenInput): AccessToken!
+  resetPassword(input: ResetPasswordInput): AccessToken!
 }

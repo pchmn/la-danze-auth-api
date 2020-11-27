@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AccountDocument } from 'src/features/account.mongo.schema';
+import { AccountDocument } from 'src/features/account/mongo-schemas/account.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
+import { RandomStringUtils } from '../../../core/utils/random-string.utils';
 import { EmailTokensDocument } from '../mongo-schemas/email-tokens.mongo.schema';
-import { RandomToken } from '../utils/random-token';
 
 @Injectable()
 export class EmailTokenService {
@@ -40,7 +40,7 @@ export class EmailTokenService {
       }).save();
     }
     // Create new confirm token
-    emailToken.confirmToken = { value: RandomToken.create() };
+    emailToken.confirmToken = { value: RandomStringUtils.createToken() };
     return emailToken.save();
   }
 
@@ -84,11 +84,11 @@ export class EmailTokenService {
     if (!emailToken) {
       return new this.emailTokenModel({
         user: user,
-        resetPasswordToken: { value: RandomToken.create() }
+        resetPasswordToken: { value: RandomStringUtils.createToken() }
       }).save();
     }
     // Create new reset password token
-    emailToken.resetPasswordToken = { value: RandomToken.create() };
+    emailToken.resetPasswordToken = { value: RandomStringUtils.createToken() };
     return emailToken.save();
   }
 

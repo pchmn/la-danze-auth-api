@@ -1,7 +1,7 @@
 import { Prop, raw, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaMongoose } from "mongoose";
-import { AccountDocument } from "src/features/account.mongo.schema";
-import { RandomToken } from "../utils/random-token";
+import { AccountDocument } from "src/features/account/mongo-schemas/account.mongo.schema";
+import { RandomStringUtils } from "../../../core/utils/random-string.utils";
 
 
 @Schema({
@@ -13,8 +13,8 @@ export class EmailTokensDocument extends Document {
   user: AccountDocument;
 
   @Prop(raw({
-    value: { type: String, default: RandomToken.create, unique: true },
-    expiresAt: { type: Date, default: RandomToken.expiresAt }
+    value: { type: String, default: RandomStringUtils.createToken, unique: true },
+    expiresAt: { type: Date, default: RandomStringUtils.tokenExpiresAt }
   }))
   confirmToken: { value: string, expiresAt?: number | Date };
 
@@ -31,9 +31,9 @@ export class EmailTokensDocument extends Document {
 
   isResetPasswordTokenValid: boolean;
 
-  getConfirmTokenExpiresAt: Function;
+  getConfirmTokenExpiresAt: () => number;
 
-  getResetPasswordTokenExpiresAt: Function;
+  getResetPasswordTokenExpiresAt: () => number;
 }
 
 export const EmailTokensSchema = SchemaFactory.createForClass(EmailTokensDocument);
@@ -41,17 +41,17 @@ export const EmailTokensSchema = SchemaFactory.createForClass(EmailTokensDocumen
 EmailTokensSchema.pre<EmailTokensDocument>('save', function (next) {
   if (this.isModified('confirmToken.value') && this.isModified('resetPasswordToken.value')) {
     // Set expiresAt for new confirmToken
-    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = RandomToken.expiresAt();
+    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = RandomStringUtils.tokenExpiresAt();
     // Set expiresAt for new resetPasswordToken
-    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = RandomToken.expiresAt();
+    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = RandomStringUtils.tokenExpiresAt();
     next();
   } else if (this.isModified('confirmToken.value')) {
     // Set expiresAt for new confirmToken
-    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = RandomToken.expiresAt();
+    if (!this.confirmToken.expiresAt) this.confirmToken.expiresAt = RandomStringUtils.tokenExpiresAt();
     next();
   } else if (this.isModified('resetPasswordToken.value')) {
     // Set expiresAt for new resetPasswordToken
-    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = RandomToken.expiresAt();
+    if (!this.resetPasswordToken.expiresAt) this.resetPasswordToken.expiresAt = RandomStringUtils.tokenExpiresAt();
     next();
   } else {
     next();

@@ -2,12 +2,12 @@ import { ConfigService } from '@nestjs/config';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Connection, Model } from 'mongoose';
-import { AccountDocument, AccountSchema } from 'src/features/account.mongo.schema';
+import { AccountDocument, AccountSchema } from 'src/features/account/mongo-schemas/account.mongo.schema';
 import { ErrorCode, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
+import { RandomStringUtils } from '../../../core/utils/random-string.utils';
 import { EmailTokensDocument, EmailTokensSchema } from '../mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from '../mongo-schemas/refresh-token.mongo.schema';
-import { RandomToken } from '../utils/random-token';
 import { EmailTokenService } from './email-token.service';
 import { RefreshTokenService } from './refresh-token.service';
 
@@ -61,7 +61,7 @@ describe('EmailTokenService', () => {
     // Check token length
     expect(emailtoken.confirmToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(emailtoken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailtoken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomStringUtils.TOKEN_LIFE_TIME);
     // No reset token
     expect(emailtoken.resetPasswordToken.value).toBeUndefined();
     expect(emailtoken.resetPasswordToken.expiresAt).toBeUndefined();
@@ -95,7 +95,7 @@ describe('EmailTokenService', () => {
     // Check token length
     expect(updatedEmailToken.confirmToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(updatedEmailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(updatedEmailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomStringUtils.TOKEN_LIFE_TIME);
   });
 
   it('[createNewConfirmToken] should create a new email token (email token does not exist)', async () => {
@@ -106,7 +106,7 @@ describe('EmailTokenService', () => {
     // Check confirm token length
     expect(emailToken.confirmToken.value).not.toBeUndefined();
     // Check confirm expiresAt (7 days)
-    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomStringUtils.TOKEN_LIFE_TIME);
   });
 
   it('[createNewResetPasswordToken] should create a new reset password token (email token exists)', async () => {
@@ -121,7 +121,7 @@ describe('EmailTokenService', () => {
     // Check token length
     expect(updatedEmailToken.resetPasswordToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(updatedEmailToken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(updatedEmailToken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomStringUtils.TOKEN_LIFE_TIME);
   });
 
   it('[createNewResetPasswordToken] should create a new email token (email token does not exist)', async () => {
@@ -132,12 +132,12 @@ describe('EmailTokenService', () => {
     // Check confirm token length
     expect(emailToken.confirmToken.value.length).toBe(64);
     // Check confirm expiresAt (7 days)
-    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailToken.getConfirmTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomStringUtils.TOKEN_LIFE_TIME);
 
     // Check token length
     expect(emailToken.resetPasswordToken.value.length).toBe(64);
     // Check expiresAt (7 days)
-    expect(emailToken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomToken.TOKEN_LIFE_TIME);
+    expect(emailToken.getResetPasswordTokenExpiresAt()).toBeLessThanOrEqual(Date.now() + RandomStringUtils.TOKEN_LIFE_TIME);
   });
 
   it('[validateResetPasswordToken] should throw an error (token not found)', () => {
