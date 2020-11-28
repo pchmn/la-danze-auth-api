@@ -16,6 +16,11 @@ export class ChangePasswordInput {
     newPassword: string;
 }
 
+export class ChangeEmailAndUsernameInput {
+    newEmail: string;
+    newUsername: string;
+}
+
 export class SignupInput {
     email: string;
     username: string;
@@ -41,26 +46,37 @@ export class EmailInput {
 }
 
 export class ApplicationRole {
-    application: string;
-    role: AccountRoleType;
+    application?: string;
+    role?: AccountRoleType;
 }
 
 export class Email {
-    value: string;
-    isConfirmed: boolean;
+    value?: string;
+    isConfirmed?: boolean;
 }
 
 export class Account {
-    accountId: string;
-    email: Email;
-    username: string;
-    roles: ApplicationRole[];
-    createdAt: DateTime;
-    isActive: boolean;
+    accountId?: string;
+    email?: Email;
+    username?: string;
+    roles?: ApplicationRole[];
+    createdAt?: DateTime;
+}
+
+export abstract class IQuery {
+    abstract myAccount(): Account | Promise<Account>;
+
+    abstract hello(): string | Promise<string>;
+
+    abstract users(): Account[] | Promise<Account[]>;
+
+    abstract confirmEmailQuery(token: string): AccessToken | Promise<AccessToken>;
 }
 
 export abstract class IMutation {
-    abstract changePassword(input?: ChangePasswordInput): AccessToken | Promise<AccessToken>;
+    abstract changePassword(input?: ChangePasswordInput): string | Promise<string>;
+
+    abstract changeEmailAndUsername(input?: ChangeEmailAndUsernameInput): AccessToken | Promise<AccessToken>;
 
     abstract signup(input: SignupInput): AccessToken | Promise<AccessToken>;
 
@@ -71,14 +87,6 @@ export abstract class IMutation {
     abstract confirmEmail(input?: TokenInput): AccessToken | Promise<AccessToken>;
 
     abstract resetPassword(input?: ResetPasswordInput): AccessToken | Promise<AccessToken>;
-}
-
-export abstract class IQuery {
-    abstract hello(): string | Promise<string>;
-
-    abstract users(): Account[] | Promise<Account[]>;
-
-    abstract confirmEmailQuery(token: string): AccessToken | Promise<AccessToken>;
 }
 
 export class AccessToken {

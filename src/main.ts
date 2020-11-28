@@ -16,7 +16,7 @@ async function bootstrap() {
     }
   })
 
-  app.use(cookieParser());
+  app.use(cookieParser(configService.get('cookie.secret')));
   await app.startAllMicroservicesAsync();
   await app.listen(configService.get('microservicePort'));
 

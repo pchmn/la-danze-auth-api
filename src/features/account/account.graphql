@@ -4,22 +4,21 @@ enum AccountRoleType {
 }
 
 type ApplicationRole {
-  application: String!
-  role: AccountRoleType!
+  application: String
+  role: AccountRoleType
 }
 
 type Email {
-  value: String!
-  isConfirmed: Boolean!
+  value: String
+  isConfirmed: Boolean
 }
 
 type Account {
-  accountId: String!
-  email: Email!
-  username: String!
-  roles: [ApplicationRole!]!
-  createdAt: DateTime!
-  isActive: Boolean!
+  accountId: String
+  email: Email
+  username: String
+  roles: [ApplicationRole]
+  createdAt: DateTime
 }
 
 input ChangePasswordInput {
@@ -27,6 +26,16 @@ input ChangePasswordInput {
   newPassword: String!
 }
 
+input ChangeEmailAndUsernameInput {
+  newEmail: String!
+  newUsername: String!
+}
+
+type Query {
+  myAccount: Account!
+}
+
 type Mutation {
-  changePassword(input: ChangePasswordInput): AccessToken!
+  changePassword(input: ChangePasswordInput): String!
+  changeEmailAndUsername(input: ChangeEmailAndUsernameInput): AccessToken!
 }
