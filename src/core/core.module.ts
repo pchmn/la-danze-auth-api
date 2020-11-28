@@ -4,6 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DateTimeResolver } from 'graphql-scalars';
 import baseConfig from 'src/config/base.config';
+import cookieConfig from 'src/config/cookie.config';
 import databaseConfig from 'src/config/database.config';
 import jwtConfig from 'src/config/jwt.config';
 import nodemailConfig from 'src/config/nodemail.config';
@@ -13,7 +14,7 @@ import { InMemoryMongodb } from 'src/shared/testing/in-memory-mongodb';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [baseConfig, databaseConfig, jwtConfig, nodemailConfig]
+      load: [baseConfig, databaseConfig, jwtConfig, nodemailConfig, cookieConfig]
     }),
     GraphQLModule.forRoot({
       typePaths: ['./src/**/*.graphql'],

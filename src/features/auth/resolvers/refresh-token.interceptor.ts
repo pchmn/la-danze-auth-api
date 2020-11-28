@@ -20,7 +20,7 @@ export class RefreshTokenInterceptor<T> implements NestInterceptor<T, AccessToke
         return this.createRefreshToken(data);
       }),
       map(res => {
-        ctxRes.cookie('refreshToken', res.refreshToken.token, { httpOnly: true });
+        ctxRes.cookie('refreshToken', res.refreshToken.token, { httpOnly: true, signed: true });
         return res.data;
       })
     );
