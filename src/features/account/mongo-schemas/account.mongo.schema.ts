@@ -55,8 +55,8 @@ export const AccountSchema = SchemaFactory.createForClass(AccountDocument);
 AccountSchema.plugin(uniqueValidator, { message: '{PATH} "{VALUE}" already exists' });
 
 AccountSchema.pre<AccountDocument>('save', function (next) {
-  // Hash password only if password has been modified or is new
   if (this.isModified('password')) {
+    // Hash password only if password has been modified or is new
     // Generate salt
     bcrypt.genSalt(SALT_ROUNDS)
       // Hash password
@@ -66,6 +66,10 @@ AccountSchema.pre<AccountDocument>('save', function (next) {
         next();
       })
       .catch(err => next(err));
+  } else if (this.isModified('email.value')) {
+    // If email has changed, it is not confirmed
+    this.email.isConfirmed = false;
+    next();
   } else {
     next();
   }

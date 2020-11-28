@@ -68,6 +68,11 @@ describe('AccountService', () => {
     expect(createdUser.accountId.length).toEqual(32);
   });
 
+  it('[findByEmailOrUsername] should throw an error (not found)', () => {
+    return expect(service.findByEmailOrUsername('nouser@test.com'))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.AccountNotFound));
+  });
+
   it('[findByEmailOrUsername] should find by email', async () => {
     const account = await service.findByEmailOrUsername('user1@test.com');
     expect(account).not.toBeNull();
@@ -82,11 +87,74 @@ describe('AccountService', () => {
     expect(account.accountId).toEqual('accountId1');
   });
 
+  it('[findByAccountId] should throw an error (not found)', () => {
+    return expect(service.findByAccountId('noAccountId'))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.AccountNotFound));
+  });
+
   it('[findByAccountId] should find by account id', async () => {
     const account = await service.findByAccountId('accountId1');
     expect(account).not.toBeNull();
     expect(account.email.value).toEqual('user1@test.com');
     expect(account.username).toEqual('user1');
+  });
+
+  it('[changePassword] should throw an error (wrong password)', () => {
+    return expect(service.changePassword('accountId1', { oldPassword: 'nopassword', newPassword: 'password' }))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.WrongCredentials));
+  });
+
+  it('[changePassword] should throw an error (min length 8)', () => {
+    return expect(service.changePassword('accountId1', { oldPassword: 'password1', newPassword: 'pwd' }))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.PasswordMinLength));
+  });
+
+  it('[changePassword] should change password', async () => {
+    const account = await service.changePassword('accountId1', { oldPassword: 'password1', newPassword: 'newPassword' });
+    expect(account.validate('newPassword')).toBeTruthy();
+  });
+
+  it('[changeEmailAndUsername] should throw an error (invalid email)', () => {
+    return expect(service.changeEmailAndUsername('accountId1', { newEmail: 'test@test..com', newUsername: 'user1' }))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.InvalidEmail('"user1@test..com" is not a valid email')));
+  });
+
+  it('[changeEmailAndUsername] should throw an error (unique email)', () => {
+    return expect(service.changeEmailAndUsername('accountId1', { newEmail: 'user2@test.com', newUsername: 'user1' }))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.EmailAlreadyExists('email "user2@test.com" already exists')));
+  });
+
+  it('[changeEmailAndUsername] should throw an error (unique username)', () => {
+    return expect(service.changeEmailAndUsername('accountId1', { newEmail: 'user1@test.com', newUsername: 'user2' }))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.EmailAlreadyExists('username "user2" already exists')));
+  });
+
+  it('[changeEmailAndUsername] should change email and username (email not changed)', async () => {
+    const res = await service.changeEmailAndUsername('accountId1', { newEmail: 'user1@test.com', newUsername: 'user1' });
+    expect(res.emailHasChanged).toBeFalsy();
+    expect(res.account.email.value).toEqual('user1@test.com');
+    expect(res.account.username).toEqual('user1');
+  });
+
+  it('[changeEmailAndUsername] should change email and username (email changed)', async () => {
+    const res = await service.changeEmailAndUsername('accountId1', { newEmail: 'user-update@test.com', newUsername: 'user1' });
+    expect(res.emailHasChanged).toBeTruthy();
+    expect(res.account.email.value).toEqual('user-update@test.com');
+    expect(res.account.username).toEqual('user1');
+  });
+
+  it('[changeEmailAndUsername] should change email and username (username changed)', async () => {
+    const res = await service.changeEmailAndUsername('accountId2', { newEmail: 'user2@test.com', newUsername: 'newUsername' });
+    expect(res.emailHasChanged).toBeFalsy();
+    expect(res.account.email.value).toEqual('user2@test.com');
+    expect(res.account.username).toEqual('newUsername');
+  });
+
+  it('[changeEmailAndUsername] should change email and username (both changed)', async () => {
+    const res = await service.changeEmailAndUsername('accountId3', { newEmail: 'user-update2@test.com', newUsername: 'newUsername2' });
+    expect(res.emailHasChanged).toBeTruthy();
+    expect(res.account.email.value).toEqual('user-update2@test.com');
+    expect(res.account.username).toEqual('newUsername2');
   });
 
   it('[updateAccount] should not modify account id', async () => {

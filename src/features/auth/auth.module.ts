@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccountDocument, AccountSchema } from '../account/mongo-schemas/account.mongo.schema';
 import { AccountService } from '../account/services/account.service';
+import { JwtStrategy } from './authorization/jwt.strategy';
 import { EmailTokensDocument, EmailTokensSchema } from './mongo-schemas/email-tokens.mongo.schema';
 import { RefreshTokenDocument, RefreshTokenSchema } from './mongo-schemas/refresh-token.mongo.schema';
 import { AuthResolver } from './resolvers/auth.resolver';
@@ -19,6 +20,10 @@ import { RefreshTokenService } from './services/refresh-token.service';
       useFactory: async (configService: ConfigService) => ({
         privateKey: configService.get('jwt.privateKey'),
         publicKey: configService.get('jwt.publicKey'),
+        signOptions: {
+          algorithm: 'RS256',
+          expiresIn: '180s'
+        }
       }),
       inject: [ConfigService],
     }),
@@ -28,6 +33,10 @@ import { RefreshTokenService } from './services/refresh-token.service';
       { name: EmailTokensDocument.name, schema: EmailTokensSchema }
     ])
   ],
-  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService, EmailService, AccountService]
+  providers: [AuthResolver, AuthService, RefreshTokenService, EmailTokenService, EmailService, AccountService, JwtStrategy],
+  exports: [
+    AuthService,
+
+  ]
 })
 export class AuthModule { }
