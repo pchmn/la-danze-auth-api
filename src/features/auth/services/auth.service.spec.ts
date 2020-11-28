@@ -68,7 +68,11 @@ describe('AuthService', () => {
         ]),
         JwtModule.register({
           publicKey: keyPair.publicKey,
-          privateKey: keyPair.privateKey
+          privateKey: keyPair.privateKey,
+          signOptions: {
+            algorithm: 'RS256',
+            expiresIn: '180s'
+          }
         })
       ],
       providers: [
@@ -123,17 +127,17 @@ describe('AuthService', () => {
   });
 
   it('[login] should throw an error (user not found)', () => {
-    return expect(service.login({ emailOrUsername: 'nouser', password: 'pwd1' }))
-      .rejects.toEqual(LaDanzeError.create(ErrorType.AccountNotFound('nouser')));
+    return expect(service.login({ emailOrUsername: 'nouser', password: 'password1' }))
+      .rejects.toEqual(LaDanzeError.create(ErrorType.AccountNotFound));
   });
 
   it('[login] should throw an error (wrong password)', () => {
-    return expect(service.login({ emailOrUsername: 'user1', password: 'pwd' }))
+    return expect(service.login({ emailOrUsername: 'user1', password: 'wrongpassword' }))
       .rejects.toEqual(LaDanzeError.create(ErrorType.WrongCredentials));
   });
 
   it('[login] should return tokens (username login)', async () => {
-    const authToken = await service.login({ emailOrUsername: 'user1', password: 'pwd1' });
+    const authToken = await service.login({ emailOrUsername: 'user1', password: 'password1' });
     // Check access token
     jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user1');
@@ -141,7 +145,7 @@ describe('AuthService', () => {
   });
 
   it('[login] should return tokens (email login)', async () => {
-    const authToken = await service.login({ emailOrUsername: 'user1@test.com', password: 'pwd1' });
+    const authToken = await service.login({ emailOrUsername: 'user1@test.com', password: 'password1' });
     // Check access token
     jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user1');

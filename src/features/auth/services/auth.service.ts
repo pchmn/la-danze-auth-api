@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountDocument } from 'src/features/account/mongo-schemas/account.mongo.schema';
 import { AccountService } from 'src/features/account/services/account.service';
-import { AccessToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
+import { AccessToken, Account, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
 import { ErrorType, LaDanzeError } from 'src/shared/errors/la-danze-error';
 import { EmailTokenService } from './email-token.service';
 import { EmailService } from './email.service';
@@ -31,13 +31,18 @@ export class AuthService {
    */
   async signup(input: SignupInput): Promise<AccessToken> {
     // First create user
-    const createdUser = await this.accountService.createAccount(input);
+    const createdAccount = await this.accountService.createAccount(input);
+    // Create email confirmation and access token
+    return this.createEmailConfirmation(createdAccount);
+  }
+
+  async createEmailConfirmation(account: AccountDocument): Promise<AccessToken> {
     // Create email token
-    const emailToken = await this.emailTokenService.createEmailToken(createdUser);
+    const emailToken = await this.emailTokenService.createNewConfirmToken(account);
     // Send email (asynchron to not block sign up)
     this.emailService.sendEmail(emailToken);
-    // Then create tokens
-    return this.createAccessToken(createdUser);
+    // Create access token
+    return this.createAccessToken(account);
   }
 
   /**
@@ -54,10 +59,6 @@ export class AuthService {
   async login(input: LoginInput): Promise<AccessToken> {
     // Get user
     const account = await this.accountService.findByEmailOrUsername(input.emailOrUsername);
-    // Check if user exists
-    if (!account) {
-      throw LaDanzeError.create(ErrorType.AccountNotFound(input.emailOrUsername));
-    }
     // Check password
     if (!(await account.validatePassword(input.password))) {
       throw LaDanzeError.create(ErrorType.WrongCredentials);
@@ -150,9 +151,17 @@ export class AuthService {
    * 
    * @throws {LaDanzeError} if access token can't be created
    */
-  private async createAccessToken(account: AccountDocument): Promise<AccessToken> {
+  async createAccessToken(account: AccountDocument): Promise<AccessToken> {
+    const accountPayload: Account = {
+      accountId: account.accountId,
+      email: account.email,
+      username: account.username,
+      roles: account.roles,
+      createdAt: account.createdAt,
+      // isActive: account.isActive
+    }
     // Create token (180s lifetime)
-    return this.jwtService.signAsync({ accountId: account.accountId, username: account.username, roles: account.roles, createdAt: account.createdAt }, { algorithm: 'RS256', expiresIn: '180s' })
+    return this.jwtService.signAsync(accountPayload)
       .then(accessToken => { return { accessToken } })
       .catch((err) => {
         console.log(err)

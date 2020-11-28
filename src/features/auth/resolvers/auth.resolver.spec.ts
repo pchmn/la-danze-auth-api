@@ -87,7 +87,7 @@ describe('AuthResolver', () => {
   });
 
   it('[login] should throw an error', () => {
-    const error = LaDanzeError.create(ErrorType.AccountNotFound('user5'));
+    const error = LaDanzeError.create(ErrorType.AccountNotFound);
     authService.login = jest.fn().mockRejectedValueOnce(error);
     return expect(resolver.login({ emailOrUsername: 'user', password: 'pwd' }))
       .rejects.toEqual(error);

@@ -28,14 +28,14 @@ export class InMemoryMongodb {
   static async insertTestData(accountModel: Model<AccountDocument>, refreshTokenModel?: Model<RefreshTokenDocument>, emailTokenModel?: Model<EmailTokensDocument>) {
     // Insert users
     const users = [
-      new accountModel({ accountId: 'accountId1', email: { value: 'user1@test.com' }, username: 'user1', password: bcrypt.hashSync('pwd1', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId2', email: { value: 'user2@test.com' }, username: 'user2', password: bcrypt.hashSync('pwd2', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId3', email: { value: 'user3@test.com' }, username: 'user3', password: bcrypt.hashSync('pwd3', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId4', email: { value: 'user4@test.com' }, username: 'user4', password: bcrypt.hashSync('pwd4', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId5', email: { value: 'user5@test.com' }, username: 'user5', password: bcrypt.hashSync('pwd5', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId6', email: { value: 'user6@test.com' }, username: 'user6', password: bcrypt.hashSync('pwd6', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId7', email: { value: 'user7@test.com' }, username: 'user7', password: bcrypt.hashSync('pwd7', bcrypt.genSaltSync(10)), roles: [] }),
-      new accountModel({ accountId: 'accountId8', email: { value: 'user8@test.com' }, username: 'user8', password: bcrypt.hashSync('pwd8', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId1', email: { value: 'user1@test.com' }, username: 'user1', password: bcrypt.hashSync('password1', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId2', email: { value: 'user2@test.com' }, username: 'user2', password: bcrypt.hashSync('password2', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId3', email: { value: 'user3@test.com' }, username: 'user3', password: bcrypt.hashSync('password3', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId4', email: { value: 'user4@test.com' }, username: 'user4', password: bcrypt.hashSync('password4', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId5', email: { value: 'user5@test.com' }, username: 'user5', password: bcrypt.hashSync('password5', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId6', email: { value: 'user6@test.com' }, username: 'user6', password: bcrypt.hashSync('password6', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId7', email: { value: 'user7@test.com' }, username: 'user7', password: bcrypt.hashSync('password7', bcrypt.genSaltSync(10)), roles: [] }),
+      new accountModel({ accountId: 'accountId8', email: { value: 'user8@test.com' }, username: 'user8', password: bcrypt.hashSync('password8', bcrypt.genSaltSync(10)), roles: [] }),
     ];
     await accountModel.collection.insertMany(users);
 

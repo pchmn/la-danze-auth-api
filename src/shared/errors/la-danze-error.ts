@@ -56,7 +56,7 @@ export class ErrorType {
   static readonly UsernameAlreadyExists = (message: string) => ({ systemErrorCode: SystemErrorCode.BadUserInput, code: 101, message });
   static readonly InvalidEmail = (message: string) => ({ systemErrorCode: SystemErrorCode.BadUserInput, code: 102, message });
   static readonly PasswordMinLength = ({ systemErrorCode: SystemErrorCode.BadUserInput, code: 103, message: 'password ust have 8 chracters minimum' });
-  static readonly AccountNotFound = (value: string) => ({ systemErrorCode: SystemErrorCode.NotFound, code: 104, message: `${value} does not exist` });
+  static readonly AccountNotFound = { systemErrorCode: SystemErrorCode.NotFound, code: 104, message: 'account not found' };
   static readonly WrongCredentials = { systemErrorCode: SystemErrorCode.BadUserInput, code: 105, message: 'wrong credentials' };
   static readonly InvalidConfirmtoken = { systemErrorCode: SystemErrorCode.BadUserInput, code: 107, message: 'invalid confirm token' };
   static readonly InvalidResetPasswordtoken = { systemErrorCode: SystemErrorCode.BadUserInput, code: 109, message: 'invalid reset password token' };
