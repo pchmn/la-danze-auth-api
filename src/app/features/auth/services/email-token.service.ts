@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ErrorType, LaDanzeError } from 'src/app/shared/errors/la-danze-error';
-import { RandomStringUtils } from '../../../core/utils/random-string.utils';
+import { RandomStringUtils } from '../../../shared/utils/random-string.utils';
 import { AccountDocument } from '../../account/mongo-schemas/account.mongo.schema';
 import { EmailTokensDocument } from '../mongo-schemas/email-tokens.mongo.schema';
 

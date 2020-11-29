@@ -1,7 +1,7 @@
 import { UseInterceptors } from '@nestjs/common/decorators';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AccessToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
-import { Cookies } from '../authorization/cookies.decorator';
+import { Cookies } from '../../../core/authorization/cookies.decorator';
 import { AuthService } from '../services/auth.service';
 import { RefreshTokenInterceptor } from './refresh-token.interceptor';
 

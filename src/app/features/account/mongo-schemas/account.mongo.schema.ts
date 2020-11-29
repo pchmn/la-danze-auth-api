@@ -2,8 +2,8 @@ import { Prop, raw, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as bcrypt from 'bcrypt';
 import { Document } from 'mongoose';
 import * as uniqueValidator from 'mongoose-unique-validator';
-import { RandomStringUtils } from "src/app/core/utils/random-string.utils";
-import { ValidatorUtils } from "src/app/core/utils/validator.utils";
+import { RandomStringUtils } from "src/app/shared/utils/random-string.utils";
+import { ValidatorUtils } from "src/app/shared/utils/validator.utils";
 import { ApplicationRole } from "src/generated/graphql.schema";
 
 const SALT_ROUNDS = 10;

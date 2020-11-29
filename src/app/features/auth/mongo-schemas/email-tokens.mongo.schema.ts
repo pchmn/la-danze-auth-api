@@ -1,6 +1,6 @@
 import { Prop, raw, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as SchemaMongoose } from "mongoose";
-import { RandomStringUtils } from "../../../core/utils/random-string.utils";
+import { RandomStringUtils } from "../../../shared/utils/random-string.utils";
 import { AccountDocument } from "../../account/mongo-schemas/account.mongo.schema";
 
 

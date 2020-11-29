@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Connection, Model } from 'mongoose';
 import { ErrorType, LaDanzeError } from 'src/app/shared/errors/la-danze-error';
 import { InMemoryMongodb } from 'src/app/shared/testing/in-memory-mongodb';
-import { RandomStringUtils } from '../../../core/utils/random-string.utils';
+import { RandomStringUtils } from '../../../shared/utils/random-string.utils';
 import { AccountDocument, AccountSchema } from '../../account/mongo-schemas/account.mongo.schema';
 import { AccountService } from '../../account/services/account.service';
 import { EmailTokensDocument, EmailTokensSchema } from '../mongo-schemas/email-tokens.mongo.schema';

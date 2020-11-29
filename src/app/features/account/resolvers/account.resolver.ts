@@ -1,8 +1,8 @@
 import { UseGuards } from '@nestjs/common/decorators';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AccessToken, Account, ChangeEmailAndUsernameInput, ChangePasswordInput } from 'src/generated/graphql.schema';
-import { CurrentAccount } from '../../auth/authorization/current-account.decorator';
-import { JwtAuthGuard } from '../../auth/authorization/jwt-auth.guard';
+import { CurrentAccount } from '../../../core/authorization/current-account.decorator';
+import { JwtAuthGuard } from '../../../core/authorization/jwt-auth.guard';
 import { AuthService } from '../../auth/services/auth.service';
 import { AccountService } from '../services/account.service';
 
