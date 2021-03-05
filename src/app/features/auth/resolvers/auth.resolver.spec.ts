@@ -8,8 +8,8 @@ import { AuthResolver } from './auth.resolver';
 
 
 class AuthServiceMock {
-  signup = jest.fn().mockResolvedValue(null);
-  login = jest.fn().mockResolvedValue(null);
+  signUp = jest.fn().mockResolvedValue(null);
+  signIn = jest.fn().mockResolvedValue(null);
   refreshToken = jest.fn().mockResolvedValue(null);
 }
 
@@ -72,31 +72,31 @@ describe('AuthResolver', () => {
     expect(resolver).toBeDefined();
   });
 
-  it('[signup] should throw an error', () => {
+  it('[signUp] should throw an error', () => {
     const error = LaDanzeError.create(ErrorType.InvalidEmail('"user1@test..com" is not a valid email'));
-    authService.signup = jest.fn().mockRejectedValueOnce(error);
-    return expect(resolver.signup({ email: 'user1@test..com', username: 'user5', password: 'pwd' }))
+    authService.signUp = jest.fn().mockRejectedValueOnce(error);
+    return expect(resolver.signUp({ email: 'user1@test..com', username: 'user5', password: 'pwd' }))
       .rejects.toEqual(error);
   });
 
-  it('[signup] should return tokens', () => {
+  it('[signUp] should return tokens', () => {
     const authToken = { accessToken: 'accessToken' };
-    authService.signup = jest.fn().mockResolvedValueOnce(authToken);
-    return expect(resolver.signup({ email: 'email', username: 'user', password: 'pwd' }))
+    authService.signUp = jest.fn().mockResolvedValueOnce(authToken);
+    return expect(resolver.signUp({ email: 'email', username: 'user', password: 'pwd' }))
       .resolves.toEqual(authToken);
   });
 
-  it('[login] should throw an error', () => {
+  it('[signIn] should throw an error', () => {
     const error = LaDanzeError.create(ErrorType.AccountNotFound);
-    authService.login = jest.fn().mockRejectedValueOnce(error);
-    return expect(resolver.login({ emailOrUsername: 'user', password: 'pwd' }))
+    authService.signIn = jest.fn().mockRejectedValueOnce(error);
+    return expect(resolver.signIn({ emailOrUsername: 'user', password: 'pwd' }))
       .rejects.toEqual(error);
   });
 
-  it('[login] should return tokens', () => {
+  it('[signIn] should return tokens', () => {
     const authToken = { accessToken: 'accessToken' };
-    authService.login = jest.fn().mockResolvedValueOnce(authToken);
-    return expect(resolver.login({ emailOrUsername: 'user', password: 'pwd' }))
+    authService.signIn = jest.fn().mockResolvedValueOnce(authToken);
+    return expect(resolver.signIn({ emailOrUsername: 'user', password: 'pwd' }))
       .resolves.toEqual(authToken);
   });
 

@@ -21,13 +21,13 @@ export class ChangeEmailAndUsernameInput {
     newUsername: string;
 }
 
-export class SignupInput {
+export class SignUpInput {
     email: string;
     username: string;
     password: string;
 }
 
-export class LoginInput {
+export class SignInInput {
     emailOrUsername: string;
     password: string;
 }
@@ -78,9 +78,9 @@ export abstract class IMutation {
 
     abstract changeEmailAndUsername(input?: ChangeEmailAndUsernameInput): AccessToken | Promise<AccessToken>;
 
-    abstract signup(input: SignupInput): AccessToken | Promise<AccessToken>;
+    abstract signUp(input: SignUpInput): AccessToken | Promise<AccessToken>;
 
-    abstract login(input: LoginInput): AccessToken | Promise<AccessToken>;
+    abstract signIn(input: SignInInput): AccessToken | Promise<AccessToken>;
 
     abstract refreshToken(): AccessToken | Promise<AccessToken>;
 

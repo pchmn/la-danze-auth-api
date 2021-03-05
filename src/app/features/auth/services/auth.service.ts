@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ErrorType, LaDanzeError } from 'src/app/shared/errors/la-danze-error';
-import { AccessToken, Account, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
+import { AccessToken, Account, ResetPasswordInput, SignInInput, SignUpInput, TokenInput } from 'src/generated/graphql.schema';
 import { AccountDocument } from '../../account/mongo-schemas/account.mongo.schema';
 import { AccountService } from '../../account/services/account.service';
 import { EmailTokenService } from './email-token.service';
@@ -19,9 +19,9 @@ export class AuthService {
     private jwtService: JwtService) { }
 
   /**
-   * Signup new user
+   * SignUp new user
    * 
-   * @param input the signup input
+   * @param input the signUp input
    * @returns refresh and access tokens
    * 
    * @throws {LaDanzeError}
@@ -29,7 +29,7 @@ export class AuthService {
    *  - email or username already exist
    *  - email format is not valid 
    */
-  async signup(input: SignupInput): Promise<AccessToken> {
+  async signUp(input: SignUpInput): Promise<AccessToken> {
     // First create user
     const createdAccount = await this.accountService.createAccount(input);
     // Create email confirmation and access token
@@ -46,9 +46,9 @@ export class AuthService {
   }
 
   /**
-   * Login a user
+   * SignIn a user
    * 
-   * @param input the login input
+   * @param input the signIn input
    * @returns refresh and access tokens 
    * 
    * @throws {LaDanzeError}
@@ -56,7 +56,7 @@ export class AuthService {
    *  - account is not found
    *  - password is wrong
    */
-  async login(input: LoginInput): Promise<AccessToken> {
+  async signIn(input: SignInInput): Promise<AccessToken> {
     // Get user
     const account = await this.accountService.findByEmailOrUsername(input.emailOrUsername);
     // Check password

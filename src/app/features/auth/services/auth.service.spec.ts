@@ -103,14 +103,14 @@ describe('AuthService', () => {
     expect(service).toBeDefined();
   });
 
-  it('[signup] should throw an error (email not valid)', () => {
-    return expect(service.signup({ email: 'user1@test..com', username: 'newUser', password: '12345678' }))
+  it('[signUp] should throw an error (email not valid)', () => {
+    return expect(service.signUp({ email: 'user1@test..com', username: 'newUser', password: '12345678' }))
       .rejects.toEqual(LaDanzeError.create(ErrorType.InvalidEmail('"user1@test..com" is not a valid email')));
   });
 
-  it('[signup] should create a user and return tokens', async () => {
+  it('[signUp] should create a user and return tokens', async () => {
     const spy = spyOn(emailService, 'sendEmail');
-    const authToken = await service.signup({ email: 'unique@test.com', username: 'unique', password: '12345678' });
+    const authToken = await service.signUp({ email: 'unique@test.com', username: 'unique', password: '12345678' });
     const createdUser = await accountModel.findOne({ 'email.value': 'unique@test.com' });
     const emailToken = await emailTokenModel.findOne({ account: createdUser });
     // Check created user
@@ -126,26 +126,26 @@ describe('AuthService', () => {
     });
   });
 
-  it('[login] should throw an error (user not found)', () => {
-    return expect(service.login({ emailOrUsername: 'nouser', password: 'password1' }))
+  it('[signIn] should throw an error (user not found)', () => {
+    return expect(service.signIn({ emailOrUsername: 'nouser', password: 'password1' }))
       .rejects.toEqual(LaDanzeError.create(ErrorType.AccountNotFound));
   });
 
-  it('[login] should throw an error (wrong password)', () => {
-    return expect(service.login({ emailOrUsername: 'user1', password: 'wrongpassword' }))
+  it('[signIn] should throw an error (wrong password)', () => {
+    return expect(service.signIn({ emailOrUsername: 'user1', password: 'wrongpassword' }))
       .rejects.toEqual(LaDanzeError.create(ErrorType.WrongCredentials));
   });
 
-  it('[login] should return tokens (username login)', async () => {
-    const authToken = await service.login({ emailOrUsername: 'user1', password: 'password1' });
+  it('[signIn] should return tokens (username signIn)', async () => {
+    const authToken = await service.signIn({ emailOrUsername: 'user1', password: 'password1' });
     // Check access token
     jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user1');
     });
   });
 
-  it('[login] should return tokens (email login)', async () => {
-    const authToken = await service.login({ emailOrUsername: 'user1@test.com', password: 'password1' });
+  it('[signIn] should return tokens (email signIn)', async () => {
+    const authToken = await service.signIn({ emailOrUsername: 'user1@test.com', password: 'password1' });
     // Check access token
     jwtService.verifyAsync(authToken.accessToken).then(decoded => {
       expect(decoded.username).toEqual('user1');

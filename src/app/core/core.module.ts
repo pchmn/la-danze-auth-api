@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DateTimeResolver } from 'graphql-scalars';
 import baseConfig from 'src/config/base.config';
@@ -10,7 +9,7 @@ import databaseConfig from 'src/config/database.config';
 import jwtConfig from 'src/config/jwt.config';
 import nodemailConfig from 'src/config/nodemail.config';
 import { InMemoryMongodb } from '../shared/testing/in-memory-mongodb';
-import { JwtStrategy } from './authorization/jwt.strategy';
+import { AuthorizationModule } from './authorization/authorization.module';
 
 @Module({
   imports: [
@@ -41,19 +40,7 @@ import { JwtStrategy } from './authorization/jwt.strategy';
       // }),
       inject: [ConfigService],
     }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        privateKey: configService.get('jwt.privateKey'),
-        publicKey: configService.get('jwt.publicKey'),
-        signOptions: {
-          algorithm: 'RS256',
-          expiresIn: '180s'
-        }
-      }),
-      inject: [ConfigService],
-    }),
-  ],
-  providers: [JwtStrategy]
+    AuthorizationModule
+  ]
 })
 export class CoreModule { }

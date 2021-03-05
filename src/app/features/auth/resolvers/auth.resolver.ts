@@ -1,6 +1,6 @@
 import { UseInterceptors } from '@nestjs/common/decorators';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { AccessToken, LoginInput, ResetPasswordInput, SignupInput, TokenInput } from 'src/generated/graphql.schema';
+import { AccessToken, ResetPasswordInput, SignInInput, SignUpInput, TokenInput } from 'src/generated/graphql.schema';
 import { Cookies } from '../../../core/authorization/cookies.decorator';
 import { AuthService } from '../services/auth.service';
 import { RefreshTokenInterceptor } from './refresh-token.interceptor';
@@ -17,14 +17,14 @@ export class AuthResolver {
 
   @Mutation(() => AccessToken)
   @UseInterceptors(RefreshTokenInterceptor)
-  async signup(@Args('input') input: SignupInput) {
-    return this.authService.signup(input);
+  async signUp(@Args('input') input: SignUpInput) {
+    return this.authService.signUp(input);
   }
 
   @Mutation(() => AccessToken)
   @UseInterceptors(RefreshTokenInterceptor)
-  async login(@Args('input') input: LoginInput) {
-    return this.authService.login(input);
+  async signIn(@Args('input') input: SignInInput) {
+    return this.authService.signIn(input);
   }
 
   @Mutation(() => AccessToken)

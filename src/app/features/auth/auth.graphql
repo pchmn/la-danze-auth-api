@@ -9,13 +9,13 @@ type AccessToken {
   accessToken: String!
 }
 
-input SignupInput {
+input SignUpInput {
   email: String!
   username: String!
   password: String!
 }
 
-input LoginInput {
+input SignInInput {
   emailOrUsername: String!
   password: String!
 }
@@ -38,8 +38,8 @@ type Query {
 }
 
 type Mutation {
-  signup(input: SignupInput!): AccessToken!
-  login(input: LoginInput!): AccessToken!
+  signUp(input: SignUpInput!): AccessToken!
+  signIn(input: SignInInput!): AccessToken!
   refreshToken: AccessToken!
   confirmEmail(input: TokenInput): AccessToken!
   resetPassword(input: ResetPasswordInput): AccessToken!

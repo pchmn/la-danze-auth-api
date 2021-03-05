@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ErrorType, LaDanzeError } from 'src/app/shared/errors/la-danze-error';
 import { MongooseValidationErrorMapper } from 'src/app/shared/errors/mongoose-validation-error-mapper';
-import { AccountRoleType, ChangeEmailAndUsernameInput, ChangePasswordInput, SignupInput } from 'src/generated/graphql.schema';
+import { AccountRoleType, ChangeEmailAndUsernameInput, ChangePasswordInput, SignUpInput } from 'src/generated/graphql.schema';
 import { AccountDocument } from '../mongo-schemas/account.mongo.schema';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class AccountService {
   /**
  * Create an account
  * 
- * @param input the signup input
+ * @param input the signUp input
  * @returns the account created
  * 
  * @throws {LaDanzeError}
@@ -22,7 +22,7 @@ export class AccountService {
  *  - email or username already exist
  *  - email format is not valid 
  */
-  async createAccount(input: SignupInput): Promise<AccountDocument> {
+  async createAccount(input: SignUpInput): Promise<AccountDocument> {
     // Init to wait mongoose to finish building index
     return this.accountModel.init()
       .then(() => new this.accountModel({
